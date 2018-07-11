@@ -167,7 +167,7 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
         maxZBin = zBins;
     
     
-	float xd, yd, length, maxrsq;
+	float xd, yd, zd, length, maxrsq;
 	#ifdef USE_INVSQRT
 	float xhalf;
 	int lengthi;
@@ -184,11 +184,12 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
                     BinnedParticle& curBinnedParticle = *(curBin[i]);
                     xd = curBinnedParticle.x - targetX;
                     yd = curBinnedParticle.y - targetY;
-                    length = xd * xd + yd * yd;
+                    zd = curBinnedParticle.z - targetZ;
+                    length = xd * xd + yd * yd + zd * zd;
                     if(length > 0 && length < maxrsq) {// prevents them from bumping into each other
                         #ifdef DRAW_FORCES
-                            glVertex2f(targetX, targetY);
-                            glVertex2f(curBinnedParticle.x, curBinnedParticle.y);
+                            glVertex3f(targetX, targetY, targetZ);
+                            glVertex3f(curBinnedParticle.x, curBinnedParticle.y, curBinnedParticle.z);
                         #endif
                         #ifdef USE_INVSQRT // optimization for the sqrt efficiency cost
                             xhalf = 0.5f * length;
@@ -198,6 +199,7 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
                             length *= 1.5f - xhalf * length * length;
                             xd *= length;
                             yd *= length;
+                            zd *= length;
                             length *= radius;
                             length = 1 / length;
                             length = (1 - length);
@@ -207,8 +209,10 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
                             length *= scale;
                             xd *= length;
                             yd *= length;
+                            zd *= length;
                             curBinnedParticle.xf += xd;
                             curBinnedParticle.yf += yd;
+                            curBinnedParticle.zf += zd;
                         #else
                             length = sqrtf(length);
                             #ifdef USE_SMOOTH_FORCES
@@ -216,9 +220,11 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
                             #endif
                             xd /= length;
                             yd /= length;
+                            zd /= length;
                             effect = (1 - (length / radius)) * scale;
                             curBinnedParticle.xf += xd * effect;
                             curBinnedParticle.yf += yd * effect;
+                            curBinnedParticle.zf += zd * effect;
                         #endif
                     }
                 }

@@ -50,7 +50,7 @@ class ofApp : public ofBaseApp{
     float timeStep;
     float particleNeighborhood, particleRepulsion;
     float centerAttraction;
-    float padding;
+    float cubeResolution;
     
     int kBinnedParticles;
     BinnedParticleSystem particleSystem;

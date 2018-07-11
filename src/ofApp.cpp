@@ -54,16 +54,15 @@ void ofApp::setup(){
     // because the screen is not subdivided enough. if
     // it's too low, the bins take up so much memory as to
     // become inefficient.
-    int binPower = 5;
+    int binPower = 6;
+    cubeResolution = 2000;
+    particleSystem.setup(cubeResolution, cubeResolution, binPower);
     
-    padding = 128;
-    particleSystem.setup(ofGetWidth() + padding * 2, ofGetHeight() + padding * 2, binPower);
-    
-    kBinnedParticles = 1000;
+    kBinnedParticles = 3000;
     for(int i = 0; i < kBinnedParticles; i++) {
-        float x = ofRandom(0, ofGetWidth()) + padding;
-        float y = ofRandom(0, ofGetHeight()) + padding;
-        float z = ofRandom(0, ofGetHeight()) + padding;
+        float x = ofRandom(0, cubeResolution) ;
+        float y = ofRandom(0, cubeResolution) ;
+        float z = ofRandom(0, cubeResolution) ;
         BinnedParticle particle(x, y, z, 0, 0, 0);
         particleSystem.add(particle);
     }
@@ -95,10 +94,7 @@ void ofApp::draw(){
     
     // do this once per frame
     particleSystem.setupForces();
-    
-//    ofPushMatrix();
-//    ofTranslate(-padding, -padding);
-    
+
     // apply per-particle forces
     if(!drawBalls) {
         ofSetLineWidth(8);
@@ -117,11 +113,13 @@ void ofApp::draw(){
     }
     
     // single-pass global forces
-    particleSystem.addAttractionForce(particleSystem.getWidth() / 2, particleSystem.getHeight() / 2, particleSystem.getHeight() / 2, particleSystem.getWidth() * 100, centerAttraction);
-    
+    if(!isMousePressed){
+        particleSystem.addAttractionForce(cubeResolution / 2, cubeResolution / 2, cubeResolution / 2, cubeResolution * 100, centerAttraction);
+    }
+        
     if(isMousePressed){
-     particleSystem.addAttractionForce(particleSystem.getWidth() / 4, particleSystem.getHeight() / 4, particleSystem.getHeight() / 4, 200, 1);
-    particleSystem.addRepulsionForce(particleSystem.getWidth() * .8 , particleSystem.getHeight() * .8 , particleSystem.getHeight() * .8 , 500, 1);
+//     particleSystem.addAttractionForce(cubeResolution * ofRandom(0,1), cubeResolution * ofRandom(0,1), cubeResolution * ofRandom(0,1), 200, 1);
+    particleSystem.addAttractionForce(cubeResolution * 0.2, cubeResolution * 0.2, cubeResolution * 0.2, 50000, 1);
     }
 
     particleSystem.update(ofGetLastFrameTime());
