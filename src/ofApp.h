@@ -19,6 +19,7 @@ class ofApp : public ofBaseApp{
     
         void updateButtonPressed();
         void exportMeshButtonPressed();
+        void addForceButtonPresssed();
 
 		void keyPressed(int key);
 		
@@ -31,6 +32,7 @@ class ofApp : public ofBaseApp{
     
         //Buttons
         ofxButton exportMeshButton;
+        ofxButton addForceButton;
         //Sliders
         ofxFloatSlider param_A;
         ofxFloatSlider param_B;

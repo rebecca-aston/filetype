@@ -4,13 +4,14 @@
 void ofApp::setup(){
     ofBackground(100);
     
-    meshSystem.setup(1000,100,"DecimatedJug.ply");//DinningRoom.ply
+//    meshSystem.setup(1000,100,"DecimatedJug.ply");//DinningRoom.ply
     
     //GUI
     gui.setup();
     
     //Button listeners calling functions below
     exportMeshButton.addListener(this, &ofApp::exportMeshButtonPressed);
+    addForceButton.addListener(this, &ofApp::addForceButtonPresssed);
 
     //Toggles declared in ofApp.h
     gui.add(toggle_axis.setup("axis", true));
@@ -19,6 +20,7 @@ void ofApp::setup(){
     
     //Buttons declared in ofApp.h
     gui.add(exportMeshButton.setup("Export Mesh"));
+    gui.add(addForceButton.setup("Add Force"));
     
 //    //General controls
 //    gui.add(control.is_recording);
@@ -57,11 +59,12 @@ void ofApp::setup(){
     padding = 128;
     particleSystem.setup(ofGetWidth() + padding * 2, ofGetHeight() + padding * 2, binPower);
     
-    kBinnedParticles = 500;
+    kBinnedParticles = 1000;
     for(int i = 0; i < kBinnedParticles; i++) {
         float x = ofRandom(0, ofGetWidth()) + padding;
         float y = ofRandom(0, ofGetHeight()) + padding;
-        BinnedParticle particle(x, y, 0, 0);
+        float z = ofRandom(0, ofGetHeight()) + padding;
+        BinnedParticle particle(x, y, z, 0, 0, 0);
         particleSystem.add(particle);
     }
     
@@ -77,41 +80,12 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    meshSystem.update(ofVec3f(0,0,0)); //This was the controller as attractor
+//    meshSystem.update(ofVec3f(0,0,0)); //This was the controller as attractor
     
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
-    //enables depth test for 3D camera
-    ofEnableDepthTest();
-   
-    //Do any 3D drawing inside of easy cam instance
-    cam.begin();
-    
-    if(toggle_axis){
-        drawAxis();
-    }
-    if(toggle_grid){
-        drawGrid();
-    }
-    
-    ofEnableLighting();
-    light.enable();
-   
-    meshSystem.draw(wire_frame);
-    
-    light.disable();
-    ofDisableLighting();
-    
-    cam.end();
-    
-    //disables depth so gui text is visible in 2D in top of 3D cam
-    ofDisableDepthTest();
-    ofSetColor(255);
-    gui.draw();
-    ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps @ ", 32, 52);
     
     
     
@@ -122,8 +96,8 @@ void ofApp::draw(){
     // do this once per frame
     particleSystem.setupForces();
     
-    ofPushMatrix();
-    ofTranslate(-padding, -padding);
+//    ofPushMatrix();
+//    ofTranslate(-padding, -padding);
     
     // apply per-particle forces
     if(!drawBalls) {
@@ -143,24 +117,68 @@ void ofApp::draw(){
     }
     
     // single-pass global forces
-    particleSystem.addAttractionForce(particleSystem.getWidth() / 2, particleSystem.getHeight() / 2, particleSystem.getWidth() * 100, centerAttraction);
-    if(isMousePressed) {
-        particleSystem.addRepulsionForce(mouseX + padding, mouseY + padding, 200, 1);
+    particleSystem.addAttractionForce(particleSystem.getWidth() / 2, particleSystem.getHeight() / 2, particleSystem.getHeight() / 2, particleSystem.getWidth() * 100, centerAttraction);
+    
+    if(isMousePressed){
+     particleSystem.addAttractionForce(particleSystem.getWidth() / 4, particleSystem.getHeight() / 4, particleSystem.getHeight() / 4, 200, 1);
+    particleSystem.addRepulsionForce(particleSystem.getWidth() * .8 , particleSystem.getHeight() * .8 , particleSystem.getHeight() * .8 , 500, 1);
     }
+
     particleSystem.update(ofGetLastFrameTime());
+    
+
+    
+//    ofPopMatrix();
+    
+
+    
+    
+    
+    
+    
+    //enables depth test for 3D camera
+    ofEnableDepthTest();
+   
+    //Do any 3D drawing inside of easy cam instance
+    cam.begin();
+    
+    if(toggle_axis){
+        drawAxis();
+    }
+    if(toggle_grid){
+        drawGrid();
+    }
+    
+    ofEnableLighting();
+    light.enable();
+   
+//    meshSystem.draw(wire_frame);
     
     // draw all the particles
     if(drawBalls) {
         for(int i = 0; i < particleSystem.size(); i++) {
-            ofCircle(particleSystem[i].x, particleSystem[i].y, particleNeighborhood * .3);
+//            ofCircle(particleSystem[i].x, particleSystem[i].y, particleNeighborhood * .3);
+            ofDrawSphere(particleSystem[i].x, particleSystem[i].y, particleSystem[i].z, particleNeighborhood * .3);
         }
     }
     
-    ofPopMatrix();
+    
+    light.disable();
+    ofDisableLighting();
+    
+    cam.end();
+    
+    //disables depth so gui text is visible in 2D in top of 3D cam
+    ofDisableDepthTest();
+    ofSetColor(255);
+    gui.draw();
+
     
     ofSetColor(255);
     ofDrawBitmapString(ofToString(kBinnedParticles) + " particles", 32, 32);
     ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", 32, 52);
+    
+
 }
 
 //--------------------------------------------------------------
@@ -205,6 +223,12 @@ void ofApp::drawGrid() {
 void ofApp::exportMeshButtonPressed(){
     meshSystem.exportMesh("artifact_"+ofGetTimestampString()+".ply");
     
+}
+
+//--------------------------------------------------------------
+void ofApp::addForceButtonPresssed(){
+
+    isMousePressed = !isMousePressed;
 }
 
 //--------------------------------------------------------------

@@ -11,7 +11,7 @@ protected:
 	float timeStep;
 	vector<BinnedParticle> particles; // a vector of particles
 	vector< vector<BinnedParticle*> > bins; // vector of vectors of pointers to particles
-	int width, height, k, xBins, yBins, binSize;
+	int width, height, k, xBins, yBins, zBins, binSize;
 
 public:
 	BinnedParticleSystem();
@@ -28,11 +28,11 @@ public:
 
 	void setupForces();
 	void addRepulsionForce(const BinnedParticle& particle, float radius, float scale);
-	void addRepulsionForce(float x, float y, float radius, float scale);
+	void addRepulsionForce(float x, float y, float z, float radius, float scale);
 	void addAttractionForce(const BinnedParticle& particle, float radius, float scale);
-	void addAttractionForce(float x, float y, float radius, float scale);
+	void addAttractionForce(float x, float y, float z, float radius, float scale);
 	void addForce(const BinnedParticle& particle, float radius, float scale);
-	void addForce(float x, float y, float radius, float scale);
+	void addForce(float x, float y, float z, float radius, float scale);
 	void update(float lastTimeStep);
 
 	void draw();
