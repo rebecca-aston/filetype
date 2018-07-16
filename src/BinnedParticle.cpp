@@ -27,32 +27,32 @@ void BinnedParticle::bounceOffWalls(float left, float top, float right, float bo
 	bool collision = false;
 
 	if (x > right){
-		x = right-10;
+        x = right;//-10;
 		xv *= -1;
 		collision = true;
 	} else if (x < left){
-		x = left+10;
+        x = left;//+10;
 		xv *= -1;
 		collision = true;
 	}
 
 	if (y > bottom){
-		y = bottom-10;
+        y = bottom;//-10;
 		yv *= -1;
 		collision = true;
 	} else if (y < top){
-		y = top+10;
+        y = top;//+10;
 		yv *= -1;
 		collision = true;
 	}
 
     //Change to depth??
     if (z > bottom){
-        z = bottom-10;
+        z = bottom;//-10;
         zv *= -1;
         collision = true;
     } else if (z < top){
-        z = top+10;
+        z = top;//+10;
         zv *= -1;
         collision = true;
     }

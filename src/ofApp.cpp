@@ -58,7 +58,7 @@ void ofApp::setup(){
     cubeResolution = 2000;
     particleSystem.setup(cubeResolution, cubeResolution, binPower);
     
-    kBinnedParticles = 3000;
+    kBinnedParticles = 1000;
     for(int i = 0; i < kBinnedParticles; i++) {
         float x = ofRandom(0, cubeResolution) ;
         float y = ofRandom(0, cubeResolution) ;
@@ -72,8 +72,11 @@ void ofApp::setup(){
     slowMotion = true;
     particleNeighborhood = 64;
     particleRepulsion = .5;
+    particleCohesion = .3;
     centerAttraction = .01;
     drawBalls = true;
+    
+    particleAlign = 0;
 
 }
 
@@ -103,7 +106,32 @@ void ofApp::draw(){
     for(int i = 0; i < particleSystem.size(); i++) {
         BinnedParticle& cur = particleSystem[i];
         // global force on other particles
-        particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
+        
+//        if(isMousePressed){
+//            particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
+//        }else{
+            particleSystem.addAttractionForce(cur, ofRandom(30,100), particleCohesion);
+//        }
+
+
+        //For some reason putting this in the particle system means that I can't do an add force AND align on the paticles
+        //But works when I have the code just below
+//        particleSystem.align(cur,90);
+        
+        vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,90);
+
+        float nx, ny, nz;
+        for(int i = 0; i < neighbors.size(); i++){
+            nx += neighbors[i]->xv/timeStep;
+            ny += neighbors[i]->yv/timeStep;
+            nz += neighbors[i]->zv/timeStep;
+        }
+
+        cur.xf += (nx*0.001);
+        cur.yf += (ny*0.001);
+        cur.zf += (nz*0.001);
+        
+        
         // forces on this particle
         cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
         cur.addDampingForce();
@@ -114,12 +142,12 @@ void ofApp::draw(){
     
     // single-pass global forces
     if(!isMousePressed){
-        particleSystem.addAttractionForce(cubeResolution / 2, cubeResolution / 2, cubeResolution / 2, cubeResolution * 100, centerAttraction);
+//        particleSystem.addAttractionForce(cubeResolution / 2, cubeResolution / 2, cubeResolution / 2, cubeResolution * 100, centerAttraction);
     }
         
     if(isMousePressed){
 //     particleSystem.addAttractionForce(cubeResolution * ofRandom(0,1), cubeResolution * ofRandom(0,1), cubeResolution * ofRandom(0,1), 200, 1);
-    particleSystem.addAttractionForce(cubeResolution * 0.2, cubeResolution * 0.2, cubeResolution * 0.2, 50000, 1);
+    particleSystem.addAttractionForce(cubeResolution * 0.2, cubeResolution * 0.2, cubeResolution * 0.2, 1000, 1);
     }
 
     particleSystem.update(ofGetLastFrameTime());

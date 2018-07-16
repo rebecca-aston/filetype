@@ -48,7 +48,7 @@ class ofApp : public ofBaseApp{
     // Binned particle setup
     
     float timeStep;
-    float particleNeighborhood, particleRepulsion;
+    float particleNeighborhood, particleRepulsion, particleCohesion, particleAlign; //Hmm align is probably more akin to directional vector
     float centerAttraction;
     float cubeResolution;
     

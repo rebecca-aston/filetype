@@ -21,10 +21,12 @@ public:
 
 	void add(BinnedParticle particle);
 	vector<BinnedParticle*> getNeighbors(BinnedParticle& particle, float radius);
-	vector<BinnedParticle*> getNeighbors(float x, float y, float radius);
-	vector<BinnedParticle*> getRegion(unsigned minX, unsigned minY, unsigned maxX, unsigned maxY);
+	vector<BinnedParticle*> getNeighbors(float x, float y, float z, float radius);
+	vector<BinnedParticle*> getRegion(unsigned minX, unsigned maxX, unsigned minY, unsigned maxY,unsigned minZ, unsigned maxZ);
 	unsigned size() const;
 	BinnedParticle& operator[](unsigned i); // not sure what this is?
+    
+    void align(BinnedParticle& particle, float radius);
 
 	void setupForces();
 	void addRepulsionForce(const BinnedParticle& particle, float radius, float scale);

@@ -34,54 +34,110 @@ BinnedParticle& BinnedParticleSystem::operator[](unsigned i) { // still not sure
 	return particles[i];
 }
 
-//vector<BinnedParticle*> BinnedParticleSystem::getNeighbors(BinnedParticle& particle, float radius) {
-//    return getNeighbors(particle.x, particle.y, radius);
-//}
-//
-//vector<BinnedParticle*> BinnedParticleSystem::getNeighbors(float x, float y, float radius) {
-//    vector<BinnedParticle*> region = getRegion(
-//        (int) (x - radius),
-//        (int) (y - radius),
-//        (int) (x + radius),
-//        (int) (y + radius));
-//    vector<BinnedParticle*> neighbors;
-//    int n = region.size();
-//    float xd, yd, rsq, maxrsq;
-//    maxrsq = radius * radius;
-//    for(int i = 0; i < n; i++) {
-//        BinnedParticle& cur = *region[i];
-//        xd = cur.x - x;
-//        yd = cur.y - y;
-//        rsq = xd * xd + yd * yd;
-//        if(rsq < maxrsq)
-//            neighbors.push_back(region[i]);
-//    }
-//    return neighbors;
-//}
+vector<BinnedParticle*> BinnedParticleSystem::getNeighbors(BinnedParticle& particle, float radius) {
+    return getNeighbors(particle.x, particle.y, particle.z, radius);
+}
 
-//vector<BinnedParticle*> BinnedParticleSystem::getRegion(unsigned minX, unsigned minY, unsigned maxX, unsigned maxY) {
-//    vector<BinnedParticle*> region;
-//    back_insert_iterator< vector<BinnedParticle*> > back = back_inserter(region);// this allows copy (below) to insert elements into back of container (region) rather than over-writing whole vector
-//
-//    //Not quite sure if I understand this math.... what are thy putting to the pow of what to see what in the bins vector?
-//    unsigned minXBin = minX >> k;
-//    unsigned maxXBin = maxX >> k;
-//    unsigned minYBin = minY >> k;
-//    unsigned maxYBin = maxY >> k;
-//    maxXBin++;
-//    maxYBin++;
-//    if(maxXBin > xBins)
-//        maxXBin = xBins;
-//    if(maxYBin > yBins)
-//        maxYBin = yBins;
-//    for(int y = minYBin; y < maxYBin; y++) {
-//        for(int x = minXBin; x < maxXBin; x++) {// looping through the "2D" vector of bins
-//            vector<BinnedParticle*>& cur = bins[y * xBins + x];
-//            copy(cur.begin(), cur.end(), back); // copys vector into region vector
-//        }
-//    }
-//    return region;
-//}
+vector<BinnedParticle*> BinnedParticleSystem::getNeighbors(float x, float y, float z, float radius) {
+    vector<BinnedParticle*> region = getRegion(
+        (int) (x - radius),
+        (int) (x + radius),
+        (int) (y - radius),
+        (int) (y + radius),
+        (int) (z - radius),
+        (int) (z + radius));
+    
+    vector<BinnedParticle*> neighbors;
+    int n = region.size();
+    
+    float xd, yd, zd, rsq, maxrsq;
+    maxrsq = radius * radius;
+    
+    for(int i = 0; i < n; i++) {
+        BinnedParticle& cur = *region[i];
+        xd = cur.x - x;
+        yd = cur.y - y;
+        zd = cur.z - z;
+        rsq = xd * xd + yd * yd + zd * zd;
+        if(rsq < maxrsq)
+            neighbors.push_back(region[i]);
+    }
+    
+    return neighbors;
+}
+
+vector<BinnedParticle*> BinnedParticleSystem::getRegion(unsigned minX, unsigned maxX,unsigned minY, unsigned maxY,unsigned minZ, unsigned maxZ) {
+    vector<BinnedParticle*> region;
+    back_insert_iterator< vector<BinnedParticle*> > back = back_inserter(region);// this allows copy (below) to insert elements into back of container (region) rather than over-writing whole vector
+
+    //All similar to the get region function, not sure why he crammed it all in here.
+    unsigned minXBin = ((unsigned) minX) >> k;
+    unsigned minYBin = ((unsigned) minY) >> k;
+    unsigned minZBin = ((unsigned) minZ) >> k;
+    unsigned maxXBin = ((unsigned) maxX) >> k;
+    unsigned maxYBin = ((unsigned) maxY) >> k;
+    unsigned maxZBin = ((unsigned) maxZ) >> k;
+    
+    maxXBin++;
+    maxYBin++;
+    maxZBin++;
+    
+    if(maxXBin > xBins)
+        maxXBin = xBins;
+    if(maxYBin > yBins)
+        maxYBin = yBins;
+    if(maxZBin > zBins)
+        maxZBin = zBins;
+
+    for(int z = minZBin; z < maxZBin; z++) {
+        for(int y = minYBin; y < maxYBin; y++) { // ah so based off the radius has created a way to check the cols/rows next to where any potential center point of a particle could be.
+            for(int x = minXBin; x < maxXBin; x++) {
+                vector<BinnedParticle*>& curBin = bins[(z * yBins * xBins) + (y * xBins + x)];
+                copy(curBin.begin(), curBin.end(), back); // copys vector into region vector
+            }
+        }
+    }
+    
+    return region;
+}
+
+//ALIGNMENT
+//OR
+//STEERING
+
+//steering force = desired velocity - current velocity
+
+
+//Could do a Desired velocity for every particle in a bin / region.
+//Thinking about the flow field implementation
+
+//optimization
+//probably better to just do the one loop of applying all forces/desires/behavior to each particle
+//This is the loop that runs over all particles and was running a addSeparationForce
+//Instead do the applyALL and one of those calls would be an apply force....??
+//hmmm
+
+//This seriously slows things down
+//How to add alignment????
+void BinnedParticleSystem::align(BinnedParticle& particle, float radius) {
+    
+    vector<BinnedParticle*> neighbors = getNeighbors(particle,radius);
+    
+    float nx, ny, nz;
+    for(int i = 0; i < neighbors.size(); i++){
+        nx += neighbors[i]->xv/timeStep;
+        ny += neighbors[i]->yv/timeStep;
+        nz += neighbors[i]->zv/timeStep;
+    }
+    
+    particle.xf += (nx*0.001);
+    particle.yf += (ny*0.001);
+    particle.zf += (nz*0.001);
+    
+//    cout << "ALIGN: " ;
+//    cout << particle.xv << endl;
+    
+}
 
 //Aha stupidly named function
 //This is more like setupBins
@@ -147,15 +203,6 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
     unsigned maxZBin = ((unsigned) maxZ) >> k;
 
     
-//    cout << "minXBin: " ;
-//        cout << minXBin << endl;
-//     cout << "maxXBin: " ;
-//        cout << maxXBin << endl;
-//     cout << "minYBin: " ;
-//        cout << minYBin << endl;
-//     cout << "maxYBin: " ;
-//        cout << maxYBin << endl;
-    
 	maxXBin++;
 	maxYBin++;
     maxZBin++;
@@ -174,6 +221,8 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
 	#else
 	float effect;
 	#endif
+    
+    
 	maxrsq = radius * radius;
     for(int z = minZBin; z < maxZBin; z++) {
         for(int y = minYBin; y < maxYBin; y++) { // ah so based off the radius has created a way to check the cols/rows next to where any potential center point of a particle could be.
