@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "MeshSystem.h"
-#include "BinnedParticleSystem.h"
+#include "Control.h"
 #include "ofxGui.h"
  
 class ofApp : public ofBaseApp{
@@ -40,24 +39,7 @@ class ofApp : public ofBaseApp{
 
         ofLight light;
         ofEasyCam cam;
-        MeshSystem meshSystem;
-    
-    
-    
-    
-    // Binned particle setup
-    
-    float timeStep;
-    float particleNeighborhood, particleRepulsion, particleCohesion, particleAlign; //Hmm align is probably more akin to directional vector
-    float centerAttraction;
-    float cubeResolution;
-    
-    int kBinnedParticles;
-    BinnedParticleSystem particleSystem;
-    bool isMousePressed, slowMotion;
-    
-    bool drawBalls;
-    
-    
+
+        Control control;
     
 };

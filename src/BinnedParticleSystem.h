@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ofMain.h"
 #include "BinnedParticle.h"
 
 #define DRAW_FORCES
@@ -25,8 +26,7 @@ public:
 	vector<BinnedParticle*> getRegion(unsigned minX, unsigned maxX, unsigned minY, unsigned maxY,unsigned minZ, unsigned maxZ);
 	unsigned size() const;
 	BinnedParticle& operator[](unsigned i); // not sure what this is?
-    
-    void align(BinnedParticle& particle, float radius);
+
     void flowField(float targetX, float targetY, float targetZ, float radius, float scale);
 
 	void setupForces();

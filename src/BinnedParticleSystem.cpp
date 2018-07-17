@@ -101,23 +101,6 @@ vector<BinnedParticle*> BinnedParticleSystem::getRegion(unsigned minX, unsigned 
     return region;
 }
 
-void BinnedParticleSystem::align(BinnedParticle& particle, float radius) {
-    
-    vector<BinnedParticle*> neighbors = getNeighbors(particle,radius);
-    
-    float nx, ny, nz;
-    for(int i = 0; i < neighbors.size(); i++){
-        nx += neighbors[i]->xv/timeStep;
-        ny += neighbors[i]->yv/timeStep;
-        nz += neighbors[i]->zv/timeStep;
-    }
-    
-    particle.xf += (nx*0.001);
-    particle.yf += (ny*0.001);
-    particle.zf += (nz*0.001);
-    
-}
-
 //just beginnings of musing
 void BinnedParticleSystem::flowField(float targetX, float targetY, float targetZ, float radius, float scale) {
     float minX = targetX - radius;
