@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofBackground(100);
+    ofBackground(0);
     
 //    meshSystem.setup(1000,100,"DecimatedJug.ply");//DinningRoom.ply
     
@@ -58,7 +58,7 @@ void ofApp::setup(){
     cubeResolution = 2000;
     particleSystem.setup(cubeResolution, cubeResolution, binPower);
     
-    kBinnedParticles = 1000;
+    kBinnedParticles = 2000;
     for(int i = 0; i < kBinnedParticles; i++) {
         float x = ofRandom(0, cubeResolution) ;
         float y = ofRandom(0, cubeResolution) ;
@@ -89,7 +89,21 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
     
+    //enables depth test for 3D camera
+    ofEnableDepthTest();
     
+    //Do any 3D drawing inside of easy cam instance
+    cam.begin();
+    
+    if(toggle_axis){
+        drawAxis();
+    }
+    if(toggle_grid){
+        drawGrid();
+    }
+    
+//    ofEnableLighting();
+//    light.enable();
     
     particleSystem.setTimeStep(timeStep);
     
@@ -108,46 +122,44 @@ void ofApp::draw(){
         // global force on other particles
         
 //        if(isMousePressed){
-//            particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
+            particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
 //        }else{
-            particleSystem.addAttractionForce(cur, ofRandom(30,100), particleCohesion);
+//            particleSystem.addAttractionForce(cur, ofRandom(30,100), particleCohesion);
 //        }
 
-
+        if(isMousePressed){
+        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
+        }
         //For some reason putting this in the particle system means that I can't do an add force AND align on the paticles
         //But works when I have the code just below
 //        particleSystem.align(cur,90);
         
-        vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,90);
-
-        float nx, ny, nz;
-        for(int i = 0; i < neighbors.size(); i++){
-            nx += neighbors[i]->xv/timeStep;
-            ny += neighbors[i]->yv/timeStep;
-            nz += neighbors[i]->zv/timeStep;
-        }
-
-        cur.xf += (nx*0.001);
-        cur.yf += (ny*0.001);
-        cur.zf += (nz*0.001);
+//        vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,90);
+//
+//        float nx, ny, nz;
+//        for(int i = 0; i < neighbors.size(); i++){
+//            nx += neighbors[i]->xv/timeStep;
+//            ny += neighbors[i]->yv/timeStep;
+//            nz += neighbors[i]->zv/timeStep;
+//        }
+//
+//        cur.xf += (nx*0.001);
+//        cur.yf += (ny*0.001);
+//        cur.zf += (nz*0.001);
         
         
         // forces on this particle
         cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
-        cur.addDampingForce();
+//        cur.addDampingForce();
     }
     if(!drawBalls) {
         glEnd();
     }
-    
-    // single-pass global forces
-    if(!isMousePressed){
-//        particleSystem.addAttractionForce(cubeResolution / 2, cubeResolution / 2, cubeResolution / 2, cubeResolution * 100, centerAttraction);
-    }
-        
+
     if(isMousePressed){
 //     particleSystem.addAttractionForce(cubeResolution * ofRandom(0,1), cubeResolution * ofRandom(0,1), cubeResolution * ofRandom(0,1), 200, 1);
-    particleSystem.addAttractionForce(cubeResolution * 0.2, cubeResolution * 0.2, cubeResolution * 0.2, 1000, 1);
+//    particleSystem.addAttractionForce(cubeResolution * 0.2, cubeResolution * 0.2, cubeResolution * 0.2, 1000, 1);
+//    particleSystem.addAttractionForce(cubeResolution / 2, cubeResolution / 2, cubeResolution / 2, cubeResolution * 100, centerAttraction);
     }
 
     particleSystem.update(ofGetLastFrameTime());
@@ -162,35 +174,15 @@ void ofApp::draw(){
     
     
     
-    //enables depth test for 3D camera
-    ofEnableDepthTest();
-   
-    //Do any 3D drawing inside of easy cam instance
-    cam.begin();
-    
-    if(toggle_axis){
-        drawAxis();
-    }
-    if(toggle_grid){
-        drawGrid();
-    }
-    
-    ofEnableLighting();
-    light.enable();
+
    
 //    meshSystem.draw(wire_frame);
+
+        particleSystem.draw();
+
     
-    // draw all the particles
-    if(drawBalls) {
-        for(int i = 0; i < particleSystem.size(); i++) {
-//            ofCircle(particleSystem[i].x, particleSystem[i].y, particleNeighborhood * .3);
-            ofDrawSphere(particleSystem[i].x, particleSystem[i].y, particleSystem[i].z, particleNeighborhood * .3);
-        }
-    }
-    
-    
-    light.disable();
-    ofDisableLighting();
+//    light.disable();
+//    ofDisableLighting();
     
     cam.end();
     

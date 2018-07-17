@@ -5,6 +5,7 @@
 BinnedParticle::BinnedParticle(float x, float y, float z, float xv, float yv, float zv) :
 	x(x), y(y), z(z),
 	xv(xv), yv(yv), zv(zv) {
+        color = ofColor(255);
 }
 
 void BinnedParticle::updatePosition(float timeStep) {
@@ -71,5 +72,7 @@ void BinnedParticle::addDampingForce(float damping) {
 }
 
 void BinnedParticle::draw() {
+//    if(color != targetColor) lerp color...
+    ofSetColor(color);
 	glVertex3f(x, y, z);
 }

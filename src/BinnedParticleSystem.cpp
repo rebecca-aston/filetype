@@ -101,24 +101,6 @@ vector<BinnedParticle*> BinnedParticleSystem::getRegion(unsigned minX, unsigned 
     return region;
 }
 
-//ALIGNMENT
-//OR
-//STEERING
-
-//steering force = desired velocity - current velocity
-
-
-//Could do a Desired velocity for every particle in a bin / region.
-//Thinking about the flow field implementation
-
-//optimization
-//probably better to just do the one loop of applying all forces/desires/behavior to each particle
-//This is the loop that runs over all particles and was running a addSeparationForce
-//Instead do the applyALL and one of those calls would be an apply force....??
-//hmmm
-
-//This seriously slows things down
-//How to add alignment????
 void BinnedParticleSystem::align(BinnedParticle& particle, float radius) {
     
     vector<BinnedParticle*> neighbors = getNeighbors(particle,radius);
@@ -134,9 +116,89 @@ void BinnedParticleSystem::align(BinnedParticle& particle, float radius) {
     particle.yf += (ny*0.001);
     particle.zf += (nz*0.001);
     
-//    cout << "ALIGN: " ;
-//    cout << particle.xv << endl;
+}
+
+//just beginnings of musing
+void BinnedParticleSystem::flowField(float targetX, float targetY, float targetZ, float radius, float scale) {
+    float minX = targetX - radius;
+    float minY = targetY - radius;
+    float minZ = targetZ - radius;
+    float maxX = targetX + radius;
+    float maxY = targetY + radius;
+    float maxZ = targetZ + radius;
+    if(minX < 0)
+        minX = 0;
+    if(minY < 0)
+        minY = 0;
+    if(minZ < 0)
+        minZ = 0;
     
+    //All similar to the get region function, not sure why he crammed it all in here.
+    unsigned minXBin = ((unsigned) minX) >> k;
+    unsigned minYBin = ((unsigned) minY) >> k;
+    unsigned minZBin = ((unsigned) minZ) >> k;
+    unsigned maxXBin = ((unsigned) maxX) >> k;
+    unsigned maxYBin = ((unsigned) maxY) >> k;
+    unsigned maxZBin = ((unsigned) maxZ) >> k;
+    
+    
+    maxXBin++;
+    maxYBin++;
+    maxZBin++;
+    if(maxXBin > xBins)
+        maxXBin = xBins;
+    if(maxYBin > yBins)
+        maxYBin = yBins;
+    if(maxZBin > zBins)
+        maxZBin = zBins;
+    
+    
+    float maxrsq;
+
+    maxrsq = radius * radius;
+    for(int z = minZBin; z < maxZBin; z++) {
+        for(int y = minYBin; y < maxYBin; y++) { // ah so based off the radius has created a way to check the cols/rows next to where any potential center point of a particle could be.
+            for(int x = minXBin; x < maxXBin; x++) {
+                vector<BinnedParticle*>& curBin = bins[(z * yBins * xBins) + (y * xBins + x)];
+                int n = curBin.size();
+                for(int i = 0; i < n; i++) {
+                    
+//                    float vecX = x-x/2;
+//                    float vecY = y-y/2;
+//                    float vecZ = z-z/2;
+                    
+//                    float vecX = y*z;
+//                    float vecY = x*z;
+//                    float vecZ = x*y;
+//
+
+                    
+                    float noise = ofMap(ofNoise(x*0.5,y*0.5,z*ofGetFrameNum()*0.5),0,1,0,TWO_PI);
+                    
+                                        float vecX = cos(noise);
+                                        float vecY = sin(noise);
+                                        float vecZ = 0;
+                    
+                    float vecXN = vecX + 1;
+                    float vecYN = vecY + 1;
+                    float vecZN = vecZ + 1;
+                    
+                    ofSetColor(255,0,0);
+                    glBegin(GL_LINE_STRIP);
+                    glVertex3f(vecX , vecY , vecZ );
+                    glVertex3f(vecXN , vecYN, vecZN);
+                    glEnd();
+                    
+                    BinnedParticle& curBinnedParticle = *(curBin[i]);
+                    
+                    curBinnedParticle.xf += MIN(vecX*0.05,1);
+                    curBinnedParticle.yf += MIN(vecY*0.05,1);
+                    curBinnedParticle.zf += MIN(vecZ*0.05,1);
+                    
+                }
+            }
+        }
+    }
 }
 
 //Aha stupidly named function
@@ -230,16 +292,21 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
                 vector<BinnedParticle*>& curBin = bins[(z * yBins * xBins) + (y * xBins + x)];
                 int n = curBin.size();
                 for(int i = 0; i < n; i++) {
+                    
+
                     BinnedParticle& curBinnedParticle = *(curBin[i]);
                     xd = curBinnedParticle.x - targetX;
                     yd = curBinnedParticle.y - targetY;
                     zd = curBinnedParticle.z - targetZ;
                     length = xd * xd + yd * yd + zd * zd;
                     if(length > 0 && length < maxrsq) {// prevents them from bumping into each other
-                        #ifdef DRAW_FORCES
+//                        #ifdef DRAW_FORCES
+                        ofSetColor(255,100);
+                        glBegin(GL_LINE_STRIP);
                             glVertex3f(targetX, targetY, targetZ);
                             glVertex3f(curBinnedParticle.x, curBinnedParticle.y, curBinnedParticle.z);
-                        #endif
+                        glEnd();
+//                        #endif
                         #ifdef USE_INVSQRT // optimization for the sqrt efficiency cost
                             xhalf = 0.5f * length;
                             lengthi = *(int*) &length;
@@ -292,6 +359,7 @@ void BinnedParticleSystem::update(float lastTimeStep) {
 
 void BinnedParticleSystem::draw() {
 	int n = particles.size();
+    glPointSize(5);
 	glBegin(GL_POINTS);
 	for(int i = 0; i < n; i++)
 		particles[i].draw();

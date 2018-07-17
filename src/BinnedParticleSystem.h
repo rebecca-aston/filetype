@@ -27,6 +27,7 @@ public:
 	BinnedParticle& operator[](unsigned i); // not sure what this is?
     
     void align(BinnedParticle& particle, float radius);
+    void flowField(float targetX, float targetY, float targetZ, float radius, float scale);
 
 	void setupForces();
 	void addRepulsionForce(const BinnedParticle& particle, float radius, float scale);
