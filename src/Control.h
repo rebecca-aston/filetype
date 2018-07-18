@@ -9,11 +9,12 @@
 #pragma once
 
 #include "ofMain.h"
-#include "Frame.h"
+#include "frame.h"
 #include "JsonRW.h"
 #include "PlyRW.h"
 #include "BinnedParticleSystem.h"
 #include "ofxAssimpModelLoader.h"
+
 
 class Control {
 protected:
@@ -31,7 +32,7 @@ protected:
     
     bool drawBalls;
         
-    deque < Frame > frames;
+    deque < frame > frames;
     
 public:
     Control();

@@ -10,6 +10,7 @@ public:
 	void bounceOffWalls(float left, float top, float right, float bottom, float damping = .3);// just make resolution?
 	void addDampingForce(float damping = .01);
     void align(float _xv, float _yv, float _zv);
+    void setTarget(float x, float y, float z); 
 	void draw();
     
     float x, y, z;
@@ -17,6 +18,12 @@ public:
     float xf, yf, zf;
     float xa, ya, za;
     
+    float xt;
+    float yt;
+    float zt;
+    
     ofColor color, targetColor;
+    bool target;
+    float targetDist;
     
 }; 

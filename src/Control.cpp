@@ -39,7 +39,7 @@ void Control::setup(){
     frames.push_back( plyR.read("DecimatedJug.ply", kBinnedParticles) );
     
     //just testing flow so far
-//    loadFrame();
+    loadFrame();
     
 
     timeStep = 100;
@@ -92,16 +92,26 @@ void Control::draw(){
         //        write better flow field
         //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
         
-        vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
-
-        for(int i = 0; i < neighbors.size(); i++){
-            cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
-        }
+        //If i pulled this out of there entirely would have to be wary of the radius for the neighboorhood
+//        vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
+//
+//        for(int i = 0; i < neighbors.size(); i++){
+//            cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
+//        }
         
-        //If cur has target value AND x y z are not in the neighborhood of target then add force to that target...
+        
+        //need to think about the manager..
+        //how do we communicate that something is ready to move on?
+        //is it just by time???
+        
 
-        particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
-        particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
+        if(cur.target){
+//            particleSystem.addAttractionForce(cur.xt,cur.yt,cur.zt, 10000, 1);
+            particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
+        }else{
+            particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
+            particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
+        }
         
         cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
         cur.addDampingForce();
@@ -124,6 +134,21 @@ void Control::loadFrame(){
     //it would act like those moments where more is know about a specific event
     //little snapshots into time
     
+    //Can just use particleSystem[i].... not sure how but hey...
+    
+    Frame lastFrame = frames[frames.size()-1];
+    
+    if(lastFrame.getPoints().size() > 0){
+        vector< ofVec3f > points = lastFrame.getPoints();
+        vector< ofColor > colors = lastFrame.getPointColors();
+        
+        for(int i = 0; i < points.size(); i++){
+            particleSystem.getParticles()[i]->setTarget(points[i].x+cubeResolution/2, points[i].y+cubeResolution/2, points[i].z+cubeResolution/2);
+            if(colors.size() > 0){
+                particleSystem.getParticles()[i]->targetColor = colors[i];
+            }
+        }
+    }
     
 }
 

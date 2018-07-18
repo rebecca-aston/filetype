@@ -121,5 +121,5 @@ void ofApp::addForceButtonPresssed(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+//system("say 'this is a quick test' &");  
 }

@@ -8,7 +8,7 @@
 #include "Frame.h"
 
 Frame::Frame(){
-    
+
 }
 
 //This might get too bulky copying things, might have to do pointers to the original data....

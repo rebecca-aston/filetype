@@ -21,6 +21,7 @@ public:
 	void setTimeStep(float timeStep);
 
 	void add(BinnedParticle particle);
+    vector<BinnedParticle*> getParticles();
 	vector<BinnedParticle*> getNeighbors(BinnedParticle& particle, float radius);
 	vector<BinnedParticle*> getNeighbors(float x, float y, float z, float radius);
 	vector<BinnedParticle*> getRegion(unsigned minX, unsigned maxX, unsigned minY, unsigned maxY,unsigned minZ, unsigned maxZ);
@@ -36,6 +37,7 @@ public:
 	void addAttractionForce(float x, float y, float z, float radius, float scale);
 	void addForce(const BinnedParticle& particle, float radius, float scale);
 	void addForce(float x, float y, float z, float radius, float scale);
+    void force(BinnedParticle& curBinnedParticle,float targetX,float targetY,float targetZ,float radius, float scale);
 	void update(float lastTimeStep);
 
 	void draw();

@@ -15,6 +15,8 @@ BinnedParticle::BinnedParticle(float x, float y, float z, float xv, float yv, fl
 	x(x), y(y), z(z),
 	xv(xv), yv(yv), zv(zv) {
         color = ofColor(255);
+        target = false;
+        targetDist = 1000;
 }
 
 void BinnedParticle::updatePosition(float timeStep) {
@@ -25,6 +27,13 @@ void BinnedParticle::updatePosition(float timeStep) {
 	x += xv * timeStep;
 	y += yv * timeStep;
     z += zv * timeStep;
+        
+    if(target && targetDist < 10) {
+        xv = 0;
+        yv = 0;
+        zv = 0;
+        target = false;
+    }
 }
 
 void BinnedParticle::resetForce() {
@@ -89,8 +98,15 @@ void BinnedParticle::align(float _xv, float _yv, float _zv) {
     za += _zv * 0.001;
 }
 
+void BinnedParticle::setTarget(float _x, float _y, float _z) {
+    target = true;
+    xt = _x;
+    yt = _y;
+    zt = _z;
+}
+
 void BinnedParticle::draw() {
 //    if(color != targetColor) lerp color...
-    ofSetColor(color);
+    ofSetColor(targetColor);
 	glVertex3f(x, y, z);
 }
