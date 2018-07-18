@@ -11,7 +11,6 @@ Control::Control(){
     
 }
 
-
 void Control::setup(){
     // this number describes how many bins are used
     // on my machine, 2 is the ideal number (2^2 = 4x4 pixel bins)
@@ -33,6 +32,9 @@ void Control::setup(){
         particleSystem.add(particle);
     }
     
+    
+    //Load in all json frames from data files into the frames deque
+    
     frame test2;
     test2.frameType = 1;
     test2.totalTime = 10000;
@@ -43,12 +45,12 @@ void Control::setup(){
     PlyRW plyR;
     frames.push_back( plyR.read("DecimatedJug.ply", kBinnedParticles) );
     
-
     
-//    //just testing flow so far
-//    loadFrame();
+//    Then write some proper "sort" algorithms that would take the frames and push into deque of pointers
+    for(int i = 0; i < frames.size(); i++){
+        sequence.push_back(&frames[i]);
+    }
     
-
     timeStep = 100;
     isMousePressed = false;
     slowMotion = true;
@@ -63,64 +65,37 @@ void Control::setup(){
 
 void Control::update(){
     
-    //Few ways to "navigate" history, sequentially, i.e. the date timeline, geographically, speculatively
-    //(i.e. word/sequence, algorithmically),
     
-    //probably better to have one set of frames
-    //and then pointers to the frames that are stored in deques
-    //that way would only have to do sort once for history timeline
-    //once for geographic etc etc
-    //dynamic sorting would be the only "live" sorting
-    
-    //Manage deque size... potentially
-    //look at the buffer logic from earlier class
-    //pop_front if longer than certain amount of time....
-    //And or just use the pop_front to move it around in time loop
-    
-    //Keep checking to see if the busy bool is true
-    //if false push_back another frame onto the deque
-    //get the last on deque to ->
-    
-    latestFrame = &frames.back();
-    
-    cout << latestFrame->frameType << endl;
-    
-    if(!latestFrame->animating){
+    if(!currentFrame.animating){
         startTime = ofGetElapsedTimeMillis();
-        latestFrame->animating = true;
+        currentFrame.animating = true;
         loadFrame();
     }else{
-        if(ofGetElapsedTimeMillis() - startTime > latestFrame->totalTime){
-            latestFrame->animating = false;
-            frame temp = frames.back();
-            frames.push_front(temp);
-            frames.pop_back();
+        if(ofGetElapsedTimeMillis() - startTime > currentFrame.totalTime){
+            currentFrame.animating = false;
+            frame * temp = sequence.back();
+            sequence.push_front(temp);
+            sequence.pop_back();
         }
     }
     
-    
-    
+
+   //particle system update logic
     particleSystem.setTimeStep(timeStep);
     
     // do this once per frame
     particleSystem.setupForces();
     
-}
-
-void Control::draw(){
-    
-    //Have to do this update logic here to see force lines drawn
-    
     for(int i = 0; i < particleSystem.size(); i++) {
         BinnedParticle& cur = particleSystem[i];
-
+        
         //        write better flow field
         //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
         
-        switch(latestFrame->frameType){
+        switch(currentFrame.frameType){
             case 1 : { // Flocking
                 vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
-
+                
                 for(int i = 0; i < neighbors.size(); i++){
                     cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
                 }
@@ -137,7 +112,7 @@ void Control::draw(){
             }
             default :
                 break;
-
+                
         }
         
         
@@ -145,24 +120,17 @@ void Control::draw(){
         cur.addDampingForce();
     }
     
-//    if(latestFrame->frameType == 1){
-//            particleSystem.addAttractionForce(cubeResolution , cubeResolution , cubeResolution , cubeResolution * 100, centerAttraction);
-//    }
-
+    //    if(latestFrame->frameType == 1){
+    //            particleSystem.addAttractionForce(cubeResolution , cubeResolution , cubeResolution , cubeResolution * 100, centerAttraction);
+    //    }
+    
     
     particleSystem.update(ofGetLastFrameTime());
     
-    particleSystem.draw();
+    
 }
 
 void Control::loadFrame(){
-    
-    //only replace or update new values that are given by a frame
-    //so theoretically history could "overlay" itself
-    //would result in synaesthetic fragments
-    //but also allow for authorial intent to have a "clean" start whenever I want where everything changes over
-    //it would act like those moments where more is know about a specific event
-    //little snapshots into time
     
     //Maybe better instead of types that you set in the struct
     //have a type be determined based on what data is available...
@@ -177,22 +145,28 @@ void Control::loadFrame(){
     
     //OR could just do massive if else statements.... hmmmmmm
     
-    switch(latestFrame->frameType){
+    currentFrame.frameType = sequence.back()->frameType;
+    currentFrame.totalTime = sequence.back()->totalTime;
+    
+    switch(currentFrame.frameType){
         case 1 : { // Flocking
-
+            
             break;
         }
         case 2 : { // Mesh and Colors
+            currentFrame.points = sequence.back()->points;
+            currentFrame.pointColors = sequence.back()->pointColors;
             
-            if(latestFrame->points.size() > 0){
+            if(currentFrame.points.size() > 0){
                 
                 //change this to activate the whole particle system
-                for(int i = 0; i < latestFrame->points.size(); i++){
-                    particleSystem[i].setTarget(latestFrame->points[i].x+cubeResolution/2, latestFrame->points[i].y+cubeResolution/2, latestFrame->points[i].z+cubeResolution/2);
-                    if(latestFrame->pointColors.size() > 0){
-                        particleSystem[i].targetColor = latestFrame->pointColors[i];
+                for(int i = 0; i < currentFrame.points.size(); i++){
+                    particleSystem[i].setTarget(currentFrame.points[i].x+cubeResolution/2, currentFrame.points[i].y+cubeResolution/2, currentFrame.points[i].z+cubeResolution/2);
+                    if(currentFrame.pointColors.size() > 0){
+                        particleSystem[i].targetColor = currentFrame.pointColors[i];
                     }
                 }
+                
             }
             break;
         }
@@ -208,6 +182,10 @@ void Control::loadFrame(){
     
 }
 
+//Keep only display in here so that can swivel around a static state
+void Control::draw(){
+    particleSystem.draw();
+}
 
 void Control::drawStats(){
     ofSetColor(255);

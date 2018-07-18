@@ -16,7 +16,6 @@ class ofApp : public ofBaseApp{
         void drawGrid();
         void sendOsc();
     
-        void updateButtonPressed();
         void exportMeshButtonPressed();
         void addForceButtonPresssed();
 
@@ -27,11 +26,12 @@ class ofApp : public ofBaseApp{
         //Booleans
         ofxToggle toggle_axis;
         ofxToggle toggle_grid;
-        ofxToggle wire_frame;
+        ofxToggle pause;
+    
     
         //Buttons
         ofxButton exportMeshButton;
-        ofxButton addForceButton;
+
         //Sliders
         ofxFloatSlider param_A;
         ofxFloatSlider param_B;

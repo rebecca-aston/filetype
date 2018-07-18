@@ -33,6 +33,9 @@ protected:
     bool drawBalls;
         
     deque < frame > frames;
+    deque < frame* > sequence;
+    
+    frame currentFrame;
     frame * latestFrame;
     
 public:

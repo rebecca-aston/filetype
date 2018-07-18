@@ -11,16 +11,17 @@ void ofApp::setup(){
     
     //Button listeners calling functions below
     exportMeshButton.addListener(this, &ofApp::exportMeshButtonPressed);
-    addForceButton.addListener(this, &ofApp::addForceButtonPresssed);
+
 
     //Toggles declared in ofApp.h
     gui.add(toggle_axis.setup("axis", true));
     gui.add(toggle_grid.setup("grid", true));
-    gui.add(wire_frame.setup("wire frame", true));
+    gui.add(pause.setup("pause", false));
+
     
     //Buttons declared in ofApp.h
     gui.add(exportMeshButton.setup("Export Mesh"));
-    gui.add(addForceButton.setup("Add Force"));
+
     
     
     glShadeModel(GL_FLAT);
@@ -31,7 +32,9 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    control.update();
+    if(!pause){
+        control.update();
+    }
 }
 
 //--------------------------------------------------------------
@@ -53,8 +56,9 @@ void ofApp::draw(){
 //    ofEnableLighting();
 //    light.enable();
     
+
     control.draw();
-    
+   
 //    light.disable();
 //    ofDisableLighting();
     
