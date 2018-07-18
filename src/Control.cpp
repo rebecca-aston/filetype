@@ -33,13 +33,20 @@ void Control::setup(){
         particleSystem.add(particle);
     }
     
+    frame test2;
+    test2.frameType = 1;
+    test2.totalTime = 10000;
+    
+    frames.push_back( test2 );
     
     //This is an edit tool to load in models and convert to my file format
     PlyRW plyR;
     frames.push_back( plyR.read("DecimatedJug.ply", kBinnedParticles) );
     
-    //just testing flow so far
-    loadFrame();
+
+    
+//    //just testing flow so far
+//    loadFrame();
     
 
     timeStep = 100;
@@ -73,7 +80,25 @@ void Control::update(){
     //Keep checking to see if the busy bool is true
     //if false push_back another frame onto the deque
     //get the last on deque to ->
-//    loadFrame();
+    
+    latestFrame = &frames.back();
+    
+    cout << latestFrame->frameType << endl;
+    
+    if(!latestFrame->animating){
+        startTime = ofGetElapsedTimeMillis();
+        latestFrame->animating = true;
+        loadFrame();
+    }else{
+        if(ofGetElapsedTimeMillis() - startTime > latestFrame->totalTime){
+            latestFrame->animating = false;
+            frame temp = frames.back();
+            frames.push_front(temp);
+            frames.pop_back();
+        }
+    }
+    
+    
     
     particleSystem.setTimeStep(timeStep);
     
@@ -92,33 +117,38 @@ void Control::draw(){
         //        write better flow field
         //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
         
-        //If i pulled this out of there entirely would have to be wary of the radius for the neighboorhood
-//        vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
-//
-//        for(int i = 0; i < neighbors.size(); i++){
-//            cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
-//        }
-        
-        
-        //need to think about the manager..
-        //how do we communicate that something is ready to move on?
-        //is it just by time???
-        
+        switch(latestFrame->frameType){
+            case 1 : { // Flocking
+                vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
 
-        if(cur.target){
-//            particleSystem.addAttractionForce(cur.xt,cur.yt,cur.zt, 10000, 1);
-            particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
-        }else{
-            particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
-            particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
+                for(int i = 0; i < neighbors.size(); i++){
+                    cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
+                }
+                particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
+                particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
+                
+                break;
+            }
+            case 2 : { // Mesh and Colors to
+                
+                particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
+                
+                break;
+            }
+            default :
+                break;
+
         }
+        
         
         cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
         cur.addDampingForce();
     }
     
-    
-//    particleSystem.addAttractionForce(cubeResolution / 2, cubeResolution / 2, cubeResolution / 2, cubeResolution * 100, centerAttraction);
+//    if(latestFrame->frameType == 1){
+//            particleSystem.addAttractionForce(cubeResolution , cubeResolution , cubeResolution , cubeResolution * 100, centerAttraction);
+//    }
+
     
     particleSystem.update(ofGetLastFrameTime());
     
@@ -134,20 +164,46 @@ void Control::loadFrame(){
     //it would act like those moments where more is know about a specific event
     //little snapshots into time
     
-    //Can just use particleSystem[i].... not sure how but hey...
+    //Maybe better instead of types that you set in the struct
+    //have a type be determined based on what data is available...
     
-    Frame lastFrame = frames[frames.size()-1];
+    //so frameType could just be a state i.e. flocking.
+    //or should flocking be a holding pattern... i.e. emergence is what results after the moment in history?
     
-    if(lastFrame.getPoints().size() > 0){
-        vector< ofVec3f > points = lastFrame.getPoints();
-        vector< ofColor > colors = lastFrame.getPointColors();
-        
-        for(int i = 0; i < points.size(); i++){
-            particleSystem.getParticles()[i]->setTarget(points[i].x+cubeResolution/2, points[i].y+cubeResolution/2, points[i].z+cubeResolution/2);
-            if(colors.size() > 0){
-                particleSystem.getParticles()[i]->targetColor = colors[i];
-            }
+    //Initialize a frame struct to have predicatble values...
+    //Then check if those values have been filled with content.
+    //If yes then push a type into a vector of ints.
+    //call switch as many times as you have type...
+    
+    //OR could just do massive if else statements.... hmmmmmm
+    
+    switch(latestFrame->frameType){
+        case 1 : { // Flocking
+
+            break;
         }
+        case 2 : { // Mesh and Colors
+            
+            if(latestFrame->points.size() > 0){
+                
+                //change this to activate the whole particle system
+                for(int i = 0; i < latestFrame->points.size(); i++){
+                    particleSystem[i].setTarget(latestFrame->points[i].x+cubeResolution/2, latestFrame->points[i].y+cubeResolution/2, latestFrame->points[i].z+cubeResolution/2);
+                    if(latestFrame->pointColors.size() > 0){
+                        particleSystem[i].targetColor = latestFrame->pointColors[i];
+                    }
+                }
+            }
+            break;
+        }
+        default : {
+            //error handling if an incomplete json file ends up in data
+            cout << "Unrecognized Frame Type" << endl;
+            //Dispose of frame and continue with deque in next call to update
+            frames.pop_back();
+            break;
+        }
+            
     }
     
 }
@@ -157,6 +213,7 @@ void Control::drawStats(){
     ofSetColor(255);
     ofDrawBitmapString(ofToString(kBinnedParticles) + " particles", 32, 32);
     ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", 32, 52);
+    ofDrawBitmapString(ofToString((int) (ofGetElapsedTimeMillis() - startTime)) + " millis",32,72);
 }
 
 

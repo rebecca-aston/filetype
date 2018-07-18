@@ -9,6 +9,6 @@ public:
     PlyRW();
     
     frame read(string s, int numParticles);
-    void write(Frame frame, string fileName);
+    void write(frame f, string fileName); 
     
 };

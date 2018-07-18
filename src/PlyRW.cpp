@@ -11,9 +11,14 @@ PlyRW::PlyRW(){
     
 }
 
-Frame PlyRW::read(string s, int numParticles){
+frame PlyRW::read(string s, int numParticles){
     ofxAssimpModelLoader model;
-    Frame frame;
+    frame frame1;
+    
+    //just for testing
+    
+    frame1.totalTime = 18000;
+    frame1.frameType = 2;
     
     model.loadModel(s);
     
@@ -22,18 +27,18 @@ Frame PlyRW::read(string s, int numParticles){
     
     for (int i = 0; i < temp.getMesh().getVertices().size(); i++){ 
         if(i%2==0){ //need to actually do the triangulation thing....
-            frame.addPoint(temp.getMesh().getVertex(i));
-            frame.addPointColor(temp.getMesh().getColor(i));
+            frame1.points.push_back(temp.getMesh().getVertex(i));
+            frame1.pointColors.push_back(temp.getMesh().getColor(i));
         }
     }
     
     //only works for me if I have one mesh, but I always do
-    return frame;
+    return frame1;
 }
 
 //Adjust this logic for exporting to Blender/ply
 //--------------------------------------------------------------
-//void PlyRW::write(Frame frame, string fileName){
+//void PlyRW::write(frame f, string fileName){
 //
 //    ofMesh expMesh;
 //    int vertCount;

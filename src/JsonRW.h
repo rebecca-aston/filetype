@@ -1,7 +1,7 @@
 #pragma once
 #include "ofMain.h"
 #include "ofxJSON.h"
-#include "Frame.h"
+#include "frame.h"
  
 class JsonRW {
 
@@ -9,7 +9,7 @@ public:
     JsonRW();
     
     void read(string s);
-    void write(Frame frame, string s, bool newFile);
+    void write(frame f, string s, bool newFile);
     
     ofxJSONElement json;
     

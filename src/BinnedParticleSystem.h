@@ -21,7 +21,6 @@ public:
 	void setTimeStep(float timeStep);
 
 	void add(BinnedParticle particle);
-    vector<BinnedParticle*> getParticles();
 	vector<BinnedParticle*> getNeighbors(BinnedParticle& particle, float radius);
 	vector<BinnedParticle*> getNeighbors(float x, float y, float z, float radius);
 	vector<BinnedParticle*> getRegion(unsigned minX, unsigned maxX, unsigned minY, unsigned maxY,unsigned minZ, unsigned maxZ);

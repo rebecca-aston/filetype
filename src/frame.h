@@ -2,9 +2,9 @@
 
 struct frame {
     string uID;
-    string frameType;
+    int frameType;
     vector< ofVec3f > points;
     vector< ofColor > pointColors;
     bool animating;
-    float totalTime;
+    int totalTime;
 };

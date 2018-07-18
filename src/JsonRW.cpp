@@ -16,7 +16,7 @@ void JsonRW::read(string s){
 }
 
 //Weather data gathered by me
-void JsonRW::write(Frame frame, string s, bool newFile){
+void JsonRW::write(frame f, string s, bool newFile){
     
     // e.g.
     //    json["light"]
@@ -26,10 +26,10 @@ void JsonRW::write(Frame frame, string s, bool newFile){
         
         vector< float > verts;
         
-        for(int i = 0; i < frame.getPoints().size(); i++){
-            verts.push_back(frame.getPoints()[i].x);
-            verts.push_back(frame.getPoints()[i].y);
-            verts.push_back(frame.getPoints()[i].z);
+        for(int i = 0; i < f.points.size(); i++){
+            verts.push_back(f.points[i].x);
+            verts.push_back(f.points[i].y);
+            verts.push_back(f.points[i].z);
         }
         
         json["vertices"] = ofToString(verts);

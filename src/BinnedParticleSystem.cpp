@@ -18,14 +18,6 @@ void BinnedParticleSystem::setup(int width, int height, int k) {
 	bins.resize(xBins * yBins * zBins);
 }
 
-vector<BinnedParticle*> BinnedParticleSystem::getParticles(){
-    vector<BinnedParticle*> particlesPointer;
-    for(int i = 0; i < particles.size();i++){
-        particlesPointer.push_back(&particles[i]);
-    }
-    return particlesPointer;
-}
-
 void BinnedParticleSystem::setTimeStep(float timeStep) {
 	this->timeStep = timeStep;
 }
@@ -38,7 +30,7 @@ unsigned BinnedParticleSystem::size() const {
 	return particles.size();
 }
 
-BinnedParticle& BinnedParticleSystem::operator[](unsigned i) { // still not sure what this is
+BinnedParticle& BinnedParticleSystem::operator[](unsigned i) { // cool, this makes particles vector public to Psystem
 	return particles[i];
 }
 

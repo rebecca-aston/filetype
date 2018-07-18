@@ -26,13 +26,14 @@ protected:
     float centerAttraction;
     float cubeResolution;
     
-    int kBinnedParticles;
+    int kBinnedParticles, startTime;
     BinnedParticleSystem particleSystem;
     bool isMousePressed, slowMotion;
     
     bool drawBalls;
         
     deque < frame > frames;
+    frame * latestFrame;
     
 public:
     Control();
