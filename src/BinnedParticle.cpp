@@ -17,6 +17,7 @@ BinnedParticle::BinnedParticle(float x, float y, float z, float xv, float yv, fl
         color = ofColor(255);
         target = false;
         targetDist = 1000;
+        triMode = true;
 }
 
 void BinnedParticle::updatePosition(float timeStep) {
@@ -27,7 +28,7 @@ void BinnedParticle::updatePosition(float timeStep) {
 	x += xv * timeStep;
 	y += yv * timeStep;
     z += zv * timeStep;
-        
+    
     if(target && targetDist < 10) {
         xv = 0;
         yv = 0;
@@ -105,8 +106,32 @@ void BinnedParticle::setTarget(float _x, float _y, float _z) {
     zt = _z;
 }
 
+//Binned particle has one main node
+//then it has two other nodes
+//the first node of it's node array is the one that gets updated OR checked against
+//the second two are just having the same velocity added to them. 
+
 void BinnedParticle::draw() {
 //    if(color != targetColor) lerp color...
-    ofSetColor(targetColor);
-	glVertex3f(x, y, z);
+//    ofSetColor(targetColor);
+    //The legacy GL point solution
+//    glVertex3f(x, y, z);
+    
+    if(triMode){
+        glBegin(GL_TRIANGLES);
+            ofSetColor(targetColor);
+            glVertex3f(x, y, z);
+            glVertex3f(x-p1.x,y-p1.y,z-p1.z);
+            glVertex3f(x-p2.x,y-p2.y,z-p2.z);
+        glEnd();
+        
+    }else{
+        glBegin(GL_POINTS);
+            glVertex3f(x, y, z);
+        glEnd();
+    }
+
 }
+
+
+

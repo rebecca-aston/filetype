@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofBackground(0);
+    ofBackground(200);
     
     control.setup();
     

@@ -362,10 +362,16 @@ void BinnedParticleSystem::update(float lastTimeStep) {
 void BinnedParticleSystem::draw() {
 	int n = particles.size();
     glPointSize(5);
-	glBegin(GL_POINTS);
-	for(int i = 0; i < n; i++)
-		particles[i].draw();
-	glEnd();
+//    glBegin(GL_POINTS);
+    for(int i = 0; i < n; i+=3){
+//            glBegin(GL_TRIANGLES);
+//        for(int j = i; j < i+3; j++){
+//            particles[j].draw();
+        particles[i].draw();
+//        }
+//            glEnd();
+    }
+//    glEnd();
 }
 
 int BinnedParticleSystem::getWidth() const {

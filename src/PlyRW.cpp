@@ -17,7 +17,7 @@ frame PlyRW::read(string s, int numParticles){
     
     //just for testing
     
-    frame1.totalTime = 18000;
+    frame1.totalTime = 20000;
     frame1.frameType = 2;
     
     model.loadModel(s);
@@ -25,10 +25,34 @@ frame PlyRW::read(string s, int numParticles){
     of3dPrimitive temp = model.getMesh(0);
     temp.setScale(5);// better to just set desired scale on export in Blender....
     
-    for (int i = 0; i < temp.getMesh().getVertices().size(); i++){ 
-        if(i%2==0){ //need to actually do the triangulation thing....
-            frame1.points.push_back(temp.getMesh().getVertex(i));
+//    for (int i = 0; i < temp.getMesh().getVertices().size(); i++){ 
+//        if(i%2==0){ //need to actually do the triangulation thing....
+//            frame1.points.push_back(temp.getMesh().getVertex(i));
+//            frame1.pointColors.push_back(temp.getMesh().getColor(i));
+//        }
+//    }
+    
+    //temporary
+    int count = 0;
+    
+    //So here we are just taking all the points of the mesh (up until a certain size/amount perhaps) and then only when instantiating the particle system do we do the calculation of the center etc.
+    
+    for (int i = 0; i < temp.getMesh().getIndices().size(); i+=3){
+        if(count < numParticles){ //need to actually do the triangulation thing....
+            frame1.points.push_back(temp.getMesh().getVertex(temp.getMesh().getIndex(i)));
+            frame1.pointColors.push_back(temp.getMesh().getColor(temp.getMesh().getIndex(i)));
+            
+            frame1.points.push_back(temp.getMesh().getVertex(temp.getMesh().getIndex(i+1)));
+            frame1.pointColors.push_back(temp.getMesh().getColor(temp.getMesh().getIndex(i+1)));
+            
+            frame1.points.push_back(temp.getMesh().getVertex(temp.getMesh().getIndex(i+2)));
+            frame1.pointColors.push_back(temp.getMesh().getColor(temp.getMesh().getIndex(i+2)));
+            
+            
             frame1.pointColors.push_back(temp.getMesh().getColor(i));
+            frame1.pointColors.push_back(temp.getMesh().getColor(i+1));
+            frame1.pointColors.push_back(temp.getMesh().getColor(i+2));
+            count ++;
         }
     }
     

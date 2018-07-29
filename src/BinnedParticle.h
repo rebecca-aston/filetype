@@ -22,8 +22,9 @@ public:
     float yt;
     float zt;
     
-    ofColor color, targetColor;
-    bool target;
+    ofColor color, targetColor, p1Color, p2Color;
+    bool target,triMode;
     float targetDist;
     
+    ofVec3f p1, p2;
 }; 
