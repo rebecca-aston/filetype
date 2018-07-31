@@ -5,7 +5,7 @@
 struct frame {
     
     //initialize with values for logic checks later
-    frame(string i = "", int f = -1, bool a = false, bool rM = false, int t = -1, int l = -1){
+    frame(string i = "frame"+ofGetTimestampString(), int f = -1, bool a = false, bool rM = false, int t = -1, int l = -1){
         uID = i;
         frameType = f;
         animating = a;

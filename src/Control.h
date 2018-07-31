@@ -28,6 +28,7 @@ protected:
     
     int kBinnedParticles, startTime;
     BinnedParticleSystem particleSystem;
+    BinnedParticleSystem backBurnerSystem;
     bool isMousePressed, slowMotion;
     
     bool drawBalls;

@@ -10,22 +10,30 @@
 class BinnedParticleSystem {
 protected:
 	float timeStep;
-	vector<BinnedParticle> particles; // a vector of particles
+	deque<BinnedParticle> particles; // a vector of particles
 	vector< vector<BinnedParticle*> > bins; // vector of vectors of pointers to particles
 	int width, height, k, xBins, yBins, zBins, binSize;
 
+    string particleOwner;
+    
 public:
 	BinnedParticleSystem();
 
 	void setup(int width, int height, int k);
 	void setTimeStep(float timeStep);
 
+    void removeAtIndex(int i);
+    void popFront(int amt);
 	void add(BinnedParticle particle);
+    void clear();
+    void setOwner(string s);
+    string getOwner();
+    vector<BinnedParticle> getParticles();
 	vector<BinnedParticle*> getNeighbors(BinnedParticle& particle, float radius);
 	vector<BinnedParticle*> getNeighbors(float x, float y, float z, float radius);
 	vector<BinnedParticle*> getRegion(unsigned minX, unsigned maxX, unsigned minY, unsigned maxY,unsigned minZ, unsigned maxZ);
 	unsigned size() const;
-	BinnedParticle& operator[](unsigned i); // not sure what this is?
+	BinnedParticle& operator[](unsigned i); // not sure what this is? 
 
     void flowField(float targetX, float targetY, float targetZ, float radius, float scale);
 

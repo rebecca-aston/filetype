@@ -20,17 +20,26 @@ void Control::setup(){
     // become inefficient.
     int binPower = 6;
     cubeResolution = 1000;
+    
+    //The active particles
     particleSystem.setup(cubeResolution, cubeResolution, binPower);
+    
+    
+    //Particle fragments get loaded into here, ONLY for gloabl forces
+    //no per-particle forces
+    backBurnerSystem.setup(cubeResolution*1.5, cubeResolution*1.5, binPower);
     
 
     kBinnedParticles = 50000;//25000 is enough to do all triangles
-    for(int i = 0; i < kBinnedParticles; i++) {
-        float x = ofRandom(0, cubeResolution) ;
-        float y = ofRandom(0, cubeResolution) ;
-        float z = ofRandom(0, cubeResolution) ;
-        BinnedParticle particle(x, y, z, 0, 0, 0);
-        particleSystem.add(particle);
-    }
+    
+    
+//    for(int i = 0; i < kBinnedParticles; i++) {
+//        float x = ofRandom(0, cubeResolution) ;
+//        float y = ofRandom(0, cubeResolution) ;
+//        float z = ofRandom(0, cubeResolution) ;
+//        BinnedParticle particle(x, y, z, 0, 0, 0);
+//        particleSystem.add(particle);
+//    }
     
     
     //Load in all json frames from data files into the frames deque
@@ -151,12 +160,22 @@ void Control::update(){
         }
     }
     
+//    //Manage size of backburnder system ???
+    //pop_front is not good
+//    if(backBurnerSystem.size() > 0 ){
+//        int pf = (backBurnerSystem.size()>kBinnedParticles)?kBinnedParticles-backBurnerSystem.size(): 1;
+//        backBurnerSystem.popFront(pf);
+//    }
+    
+
 
    //particle system update logic
     particleSystem.setTimeStep(timeStep);
+    backBurnerSystem.setTimeStep(timeStep);
     
     // do this once per frame
     particleSystem.setupForces();
+    backBurnerSystem.setupForces();
     
 
         //        write better flow field
@@ -182,7 +201,7 @@ void Control::update(){
                 }
                 
                 
-                for(int i = currentFrame.leader - 20; i < currentFrame.leader + 20; i++){
+                for(int i = MAX(0,currentFrame.leader - 20); i < MIN(particleSystem.size(),currentFrame.leader + 20); i++){
                     BinnedParticle& cur = particleSystem[i];
                     vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
                     
@@ -255,13 +274,51 @@ void Control::update(){
                 break;
                 
         }
-        
     
+    //placeholder for better system (i.e. single axis force (float down, or float sideways)
+    //better to add just a directional global force than having to set targets or something.
+    backBurnerSystem.addAttractionForce(ofRandom(0,cubeResolution), ofRandom(0,cubeResolution), 0, 1000, 0.1);
+    
+    //Definitely add a directional force option... will be lighter on the system....
+    
+    for(int i = 0; i < backBurnerSystem.size(); i++) {
+        BinnedParticle& cur = backBurnerSystem[i];
+        if(cur.life < 0) backBurnerSystem.removeAtIndex(i);
+        cur.bounceOffWalls(0, 0, backBurnerSystem.getWidth(), backBurnerSystem.getHeight());
+        cur.addDampingForce();
+    }
     
     particleSystem.update(ofGetLastFrameTime());
+    backBurnerSystem.update(ofGetLastFrameTime());
     
     
 }
+
+
+//Keep only display in here so that can swivel around a static state
+void Control::draw(){
+    particleSystem.draw();
+    backBurnerSystem.draw();
+
+    if(currentFrame.mesh.getVertices().size() > 0 && currentFrame.renderMesh){
+        currentFrame.mesh.drawWireframe();
+    }
+    
+    
+//    //NO they look sad
+//    //BUT also there is something strange happening with how the vectors are being stored / added.
+//    for(int i = 0;i < sequence.size();i++){
+//        if(sequence[i]->uID != particleSystem.getOwner() && sequence[i]->particles.size() > 0) {
+//            
+//            for(int j = 0;j < sequence[i]->particles.size();j++){
+//                sequence[i]->particles[j].draw();
+//            }
+//
+//        }
+//    }
+    
+}
+
 
 void Control::loadFrame(){
     
@@ -273,96 +330,115 @@ void Control::loadFrame(){
             if(sequence.back()->leader != -1){
                 currentFrame.leader = sequence.back()->leader;
             }else{
-                currentFrame.leader = ofRandom(200,kBinnedParticles-200);
+                currentFrame.leader = ofRandom(0,sequence.back()->particles.size());
             }
             
             
             break;
         }
         case 2 : { // Mesh and Colors
-//            currentFrame.points = sequence.back()->points;
-//            currentFrame.pointColors = sequence.back()->pointColors;
+            //            currentFrame.points = sequence.back()->points;
+            //            currentFrame.pointColors = sequence.back()->pointColors;
             
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
             
-//            if(sequence.back()->mesh.getVertices().size() > 0 && sequence.back()->particles.size() == 0){
-            
+            if(sequence.back()->mesh.getVertices().size() > 0 && sequence.back()->particles.size() == 0){
                 
-//                for (int i = 0; i < sequence.back()->mesh.getIndices().size()-3; i++){
-//
-//                        float x = ofRandom(0, cubeResolution) ;
-//                        float y = ofRandom(0, cubeResolution) ;
-//                        float z = ofRandom(0, cubeResolution) ;
-//                        BinnedParticle particle(x, y, z, 0, 0, 0);
-//
-//
-//
-//                        ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
-//                        particle.setTarget(t.x,t.y,t.z);
-//
-//                        ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
-//                        ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
-//
-//                        particle.p1 = diff1;
-//                        particle.p2 = diff2;
-//
-//                        particle.targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
-//                        particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
-//                        particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
-//
-//                        sequence.back()->particles.push_back(particle);
-//
-//                }
-//
-//
-//            }else{
-//
-//            }
-            
-            
-            
-            for(int i = 0; i < particleSystem.size(); i++) {
                 
-                particleSystem[i].setTarget(particleSystem[i].x, particleSystem[i].y, 0);
-                
-            }
-            
-            if(sequence.back()->mesh.getVertices().size() > 0){
                 currentFrame.mesh = sequence.back()->mesh;
+                
+                
+                
+                for (int i = 0; i < sequence.back()->mesh.getIndices().size()-3; i++){
+                    
+                    float x = ofRandom(0, cubeResolution) ;
+                    float y = ofRandom(0, cubeResolution) ;
+                    float z = ofRandom(0, cubeResolution) ;
+                    BinnedParticle particle(x, y, z, 0, 0, 0);
+                    
+                    ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
+                    particle.setTarget(t.x,t.y,t.z);
+                    
+                    ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
+                    ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
+                    
+                    particle.p1 = diff1;
+                    particle.p2 = diff2;
+                    
+                    particle.targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
+                    particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
+                    particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
+                    
+                    sequence.back()->particles.push_back(particle);
+                    
+                }
+                
+                
             }
             
-            if(currentFrame.mesh.getVertices().size() > 0){
-                int count = 0;
-                
-                //triangulation
-
-//                cout << currentFrame.mesh.getIndices().size() << endl;
-//                cout << currentFrame.mesh.getVertices().size() << endl;
-                    for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i++){
-                        
-                        if(count < kBinnedParticles){ //need to actually do the triangulation thing....
-                            
-                            ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
-                            particleSystem[count].setTarget(t.x,t.y,t.z);
-                            
-                            ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
-                            ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
-                            
-                            particleSystem[count].p1 = diff1;
-                            particleSystem[count].p2 = diff2;
-                            
-                            particleSystem[count].targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
-                            particleSystem[count].p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
-                             particleSystem[count].p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
-     
-                            count ++;
-                        }
+            
+            //find best wat to do this but for now ok.
+            
+            
+            //check which frame's particles are currently loaded into the system
+            //get a copy of the particles and replace the original frame's particles with modified
+            //particles. will never render the frame's particles in system.
+            for(int i = 0;i < sequence.size();i++){
+                if(sequence[i]->uID == particleSystem.getOwner()) {
+                    sequence[i]->particles = particleSystem.getParticles();
+                    for(int j = 0; j < sequence[i]->particles.size(); j++ ){
+                        backBurnerSystem.add(sequence[i]->particles[j]);
+                        backBurnerSystem[i].setLife(ofRandom(100,10000));
                     }
-                    
-//                cout << count << endl;
+                    particleSystem.clear();
+                    break;
+                }
+            }
+            
+            for (int i = 0; i < sequence.back()->particles.size(); i++){
+                
+                particleSystem.add(sequence.back()->particles[i]);
                 
             }
+            
+            particleSystem.setOwner(sequence.back()->uID);
+            
+            
+            
+            
+            //                if(currentFrame.mesh.getVertices().size() > 0){
+            //                    int count = 0;
+            //
+            //                    for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i++){
+            //
+            //                        if(count < kBinnedParticles){ //need to actually do the triangulation thing....
+            //
+            //                            ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
+            //                            particleSystem[count].setTarget(t.x,t.y,t.z);
+            //
+            //                            ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
+            //                            ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
+            //
+            //                            particleSystem[count].p1 = diff1;
+            //                            particleSystem[count].p2 = diff2;
+            //
+            //                            particleSystem[count].targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
+            //                            particleSystem[count].p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
+            //                            particleSystem[count].p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
+            //
+            //                            count ++;
+            //                        }
+            //                    }
+            //
+            //                }
+            
+            
+            
+            
+            
+            
+            
             
             
             break;
@@ -385,23 +461,13 @@ void Control::loadFrame(){
     
 }
 
-//Keep only display in here so that can swivel around a static state
-void Control::draw(){
-    particleSystem.draw();
-    
-
-    if(currentFrame.mesh.getVertices().size() > 0 && currentFrame.renderMesh){
-        currentFrame.mesh.drawWireframe();
-    }
-    
-    
-}
 
 void Control::drawStats(){
     ofSetColor(255);
-    ofDrawBitmapString(ofToString(kBinnedParticles) + " particles", 32, 32);
-    ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", 32, 52);
-    ofDrawBitmapString(ofToString((int) (ofGetElapsedTimeMillis() - startTime)) + " millis",32,72);
+    ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", 32, 32);
+    ofDrawBitmapString(ofToString(backBurnerSystem.size()) + " backburner particles", 32, 52);
+    ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", 32, 72);
+    ofDrawBitmapString(ofToString((int) (ofGetElapsedTimeMillis() - startTime)) + " millis",32,92);
 }
 
 void Control::exportPLY(){

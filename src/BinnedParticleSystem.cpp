@@ -22,16 +22,41 @@ void BinnedParticleSystem::setTimeStep(float timeStep) {
 	this->timeStep = timeStep;
 }
 
+void BinnedParticleSystem::removeAtIndex(int i) {
+    particles.erase(particles.begin() + i);
+}
+
+void BinnedParticleSystem::popFront(int amt) { 
+    for(int i = 0;i < amt; i++){
+        particles.pop_front();
+    }
+}
+
 void BinnedParticleSystem::add(BinnedParticle particle) {
 	particles.push_back(particle);
 }
 
-//idea is to always have max number of particles actively in the system
-//But to be deactivating/freeing up the oldest particles as new ones are being added.
-//Not actually pop but some other method...
-//void BinnedParticleSystem::pop(BinnedParticle * particle) {
-//    particles.pop_front(particle);
-//}
+void BinnedParticleSystem::clear(){
+    particles.clear();
+}
+
+void BinnedParticleSystem::setOwner(string s){
+    particleOwner = s;
+}
+
+string BinnedParticleSystem::getOwner(){
+    return particleOwner;
+}
+
+vector<BinnedParticle> BinnedParticleSystem::getParticles(){
+    
+    vector<BinnedParticle> temp;
+    for(int i = 0; i < particles.size(); i++) {
+        temp.push_back(particles[i]);
+    }
+    return temp;
+    
+}
 
 unsigned BinnedParticleSystem::size() const {
 	return particles.size();

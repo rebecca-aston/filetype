@@ -11,9 +11,9 @@
 // and can also be used to do size/rendering mapping like the nice discovery from Machine learning project
 
 
-BinnedParticle::BinnedParticle(float x, float y, float z, float xv, float yv, float zv) :
+BinnedParticle::BinnedParticle(float x, float y, float z, float xv, float yv, float zv, float l) :
 	x(x), y(y), z(z),
-	xv(xv), yv(yv), zv(zv) {
+	xv(xv), yv(yv), zv(zv), life(l) {
         color = ofColor(255);
         target = false;
         targetDist = 1000;
@@ -28,6 +28,8 @@ void BinnedParticle::updatePosition(float timeStep) {
 	x += xv * timeStep;
 	y += yv * timeStep;
     z += zv * timeStep;
+    
+    life -= ofRandom(10,50);
     
     if(target && targetDist < 10) {
         xv = 0;
@@ -107,6 +109,10 @@ void BinnedParticle::setTarget(float _x, float _y, float _z) {
     zt = _z;
 }
 
+void BinnedParticle::setLife(int l){
+    life = l;
+}
+
 //Binned particle has one main node
 //then it has two other nodes
 //the first node of it's node array is the one that gets updated OR checked against
@@ -118,7 +124,7 @@ void BinnedParticle::draw() {
     //The legacy GL point solution
 //    glVertex3f(x, y, z);
     
-    if(triMode){
+//    if(triMode){
         glBegin(GL_TRIANGLES);
             ofSetColor(targetColor);
             glVertex3f(x, y, z);
@@ -126,11 +132,11 @@ void BinnedParticle::draw() {
             glVertex3f(x-p2.x,y-p2.y,z-p2.z);
         glEnd();
         
-    }else{
-        glBegin(GL_POINTS);
-            glVertex3f(x, y, z);
-        glEnd();
-    }
+//    }else{
+//        glBegin(GL_POINTS);
+//            glVertex3f(x, y, z);
+//        glEnd();
+//    }
 
 }
 
