@@ -8,7 +8,7 @@ class PlyRW {
 public:
     PlyRW();
     
-    frame read(string s, int numParticles);
-    void write(frame f, string fileName); 
+    ofMesh read(string s, int numParticles);
+    void write(frame f, string fileName);
     
 };

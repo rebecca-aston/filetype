@@ -11,19 +11,13 @@ PlyRW::PlyRW(){
     
 }
 
-frame PlyRW::read(string s, int numParticles){
+ofMesh PlyRW::read(string s, int numParticles){
     ofxAssimpModelLoader model;
-    frame frame1;
-    
-    //just for testing
-    
-    frame1.totalTime = 20000;
-    frame1.frameType = 2;
     
     model.loadModel(s);
     
-    of3dPrimitive temp = model.getMesh(0);
-    temp.setScale(5);// better to just set desired scale on export in Blender....
+    ofMesh temp = model.getMesh(0);
+
     
 //    for (int i = 0; i < temp.getMesh().getVertices().size(); i++){ 
 //        if(i%2==0){ //need to actually do the triangulation thing....
@@ -32,32 +26,7 @@ frame PlyRW::read(string s, int numParticles){
 //        }
 //    }
     
-    //temporary
-    int count = 0;
-    
-    //So here we are just taking all the points of the mesh (up until a certain size/amount perhaps) and then only when instantiating the particle system do we do the calculation of the center etc.
-    
-    for (int i = 0; i < temp.getMesh().getIndices().size(); i+=3){
-        if(count < numParticles){ //need to actually do the triangulation thing....
-            frame1.points.push_back(temp.getMesh().getVertex(temp.getMesh().getIndex(i)));
-            frame1.pointColors.push_back(temp.getMesh().getColor(temp.getMesh().getIndex(i)));
-            
-            frame1.points.push_back(temp.getMesh().getVertex(temp.getMesh().getIndex(i+1)));
-            frame1.pointColors.push_back(temp.getMesh().getColor(temp.getMesh().getIndex(i+1)));
-            
-            frame1.points.push_back(temp.getMesh().getVertex(temp.getMesh().getIndex(i+2)));
-            frame1.pointColors.push_back(temp.getMesh().getColor(temp.getMesh().getIndex(i+2)));
-            
-            
-            frame1.pointColors.push_back(temp.getMesh().getColor(i));
-            frame1.pointColors.push_back(temp.getMesh().getColor(i+1));
-            frame1.pointColors.push_back(temp.getMesh().getColor(i+2));
-            count ++;
-        }
-    }
-    
-    //only works for me if I have one mesh, but I always do
-    return frame1;
+    return temp;
 }
 
 //Adjust this logic for exporting to Blender/ply
@@ -87,3 +56,24 @@ frame PlyRW::read(string s, int numParticles){
 //
 //    expMesh.save(fileName);
 //}
+
+//Adjust this logic for exporting to Blender/ply
+//--------------------------------------------------------------
+void PlyRW::write(frame f, string fileName) {
+
+    ofMesh expMesh;
+    int vertCount;
+
+    //add all spheres to one mesh, with Indices update to reflect new vertex positions
+    for(int i = 0; i < f.points.size(); i++){
+        
+        expMesh.addVertex(f.points[i]);
+        expMesh.addColor(f.pointColors[i]);
+        
+//        expMesh.addIndex(i);
+
+    }
+
+    expMesh.save(fileName+".ply");
+}
+

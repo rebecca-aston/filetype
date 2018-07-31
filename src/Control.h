@@ -47,7 +47,7 @@ public:
     void loadFrame();
     void drawStats();
     
-    
+    void exportPLY();
     
 //    If I need to add to GUI
 //    ofParameter<float> SIDEWAYS{"Sideways", 0, -1, 1};

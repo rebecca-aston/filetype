@@ -19,11 +19,11 @@ void Control::setup(){
     // it's too low, the bins take up so much memory as to
     // become inefficient.
     int binPower = 6;
-    cubeResolution = 2000;
+    cubeResolution = 1000;
     particleSystem.setup(cubeResolution, cubeResolution, binPower);
     
 
-    kBinnedParticles = 2000;
+    kBinnedParticles = 50000;//25000 is enough to do all triangles
     for(int i = 0; i < kBinnedParticles; i++) {
         float x = ofRandom(0, cubeResolution) ;
         float y = ofRandom(0, cubeResolution) ;
@@ -37,15 +37,88 @@ void Control::setup(){
     
     frame test2;
     test2.frameType = 1;
-    test2.totalTime = 10000;
+    test2.totalTime = 30000;
+
     
     frames.push_back( test2 );
     
     //This is an edit tool to load in models and convert to my file format
     PlyRW plyR;
-    frames.push_back( plyR.read("DecimatedJug.ply", kBinnedParticles) );
+    
+    //    PlyRW plyR;
+    
+ 
+    
+
     
     
+    frame test1;
+    test1.frameType = 2;
+    test1.totalTime = 20000;
+    
+    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+
+    
+    for(int i = 0; i < test1.mesh.getVertices().size();i++){
+        test1.mesh.setVertex(i, test1.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+    }
+    
+    
+    frames.push_back( test1 );
+    
+    
+  
+    
+    
+    
+    frame test5;
+    test5.frameType = 2;
+    test5.totalTime = 20000;
+    
+    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+    test5.mesh = plyR.read("LoungeCouch.ply", kBinnedParticles);
+    
+    for(int i = 0; i < test5.mesh.getVertices().size();i++){
+        test5.mesh.setVertex(i, test5.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+    }
+    
+    
+    frames.push_back( test5 );
+    
+
+    frame test4;
+    test4.frameType = 2;
+    test4.totalTime = 20000;
+    
+    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+    test4.mesh = plyR.read("LungeLeftWallDecimated0.5.ply", kBinnedParticles);
+    
+    for(int i = 0; i < test4.mesh.getVertices().size();i++){
+        test4.mesh.setVertex(i, test4.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+    }
+    
+    
+    frames.push_back( test4 );
+
+
+    
+    frame test3;
+    test3.frameType = 2;
+    test3.totalTime = 20000;
+    //    test3.renderMesh = true;
+    
+    test3.mesh = plyR.read("contextDecimated0.5.ply", kBinnedParticles);
+    
+    for(int i = 0; i < test3.mesh.getVertices().size();i++){
+        test3.mesh.setVertex(i, test3.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+    }
+    
+    
+    frames.push_back( test3 );
+    
+    
+    
+
 //    Then write some proper "sort" algorithms that would take the frames and push into deque of pointers
     for(int i = 0; i < frames.size(); i++){
         sequence.push_back(&frames[i]);
@@ -85,116 +158,76 @@ void Control::update(){
     // do this once per frame
     particleSystem.setupForces();
     
-    for(int i = 0; i < particleSystem.size(); i++) {
-        BinnedParticle& cur = particleSystem[i];
-        
+
         //        write better flow field
         //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
         
         switch(currentFrame.frameType){
             case 1 : { // Flocking
-                vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
+
                 
-                for(int i = 0; i < neighbors.size(); i++){
-                    cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
+                for(int i = 0; i < particleSystem.size(); i++) {
+                    BinnedParticle& cur = particleSystem[i];
+                    //                vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
+                    //
+                    //                for(int i = 0; i < neighbors.size(); i++){
+                    //                    cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
+                    //                }
+                    //                particleSystem.addRepulsionForce(cur, 300, particleRepulsion);
+                    //                particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
+
+
+//                    cur.addDampingForce();
+                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
                 }
-                particleSystem.addRepulsionForce(cur, particleNeighborhood, particleRepulsion);
-                particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
+                
+                
+                for(int i = currentFrame.leader - 20; i < currentFrame.leader + 20; i++){
+                    BinnedParticle& cur = particleSystem[i];
+                    vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
+                    
+                    for(int i = 0; i < neighbors.size(); i++){
+                        cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
+                    }
+                    
+                    particleSystem.addRepulsionForce(cur, 70, .1);
+                    particleSystem.addAttractionForce(cur, 50, .3);
+ 
+   
+                }
+                
+                
+                particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
+            
                 
                 break;
             }
             case 2 : { // Mesh and Colors to
                 
-                particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
+            
+                for(int i = 0; i < particleSystem.size(); i++) {
+                    BinnedParticle& cur = particleSystem[i];
+                    
+                    particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
                 
+                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
+                    cur.addDampingForce();
+                }
+
                 break;
             }
-            default :
-                break;
+            case 3 : { // Mesh and Colors to
                 
-        }
-        
-        
-        cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
-        cur.addDampingForce();
-    }
-    
-    //    if(latestFrame->frameType == 1){
-    //            particleSystem.addAttractionForce(cubeResolution , cubeResolution , cubeResolution , cubeResolution * 100, centerAttraction);
-    //    }
-    
-    
-    particleSystem.update(ofGetLastFrameTime());
-    
-    
-}
-
-void Control::loadFrame(){
-    
-    //Maybe better instead of types that you set in the struct
-    //have a type be determined based on what data is available...
-    
-    //so frameType could just be a state i.e. flocking.
-    //or should flocking be a holding pattern... i.e. emergence is what results after the moment in history?
-    
-    //Initialize a frame struct to have predicatble values...
-    //Then check if those values have been filled with content.
-    //If yes then push a type into a vector of ints.
-    //call switch as many times as you have type...
-    
-    //OR could just do massive if else statements.... hmmmmmm
-    
-    currentFrame.frameType = sequence.back()->frameType;
-    currentFrame.totalTime = sequence.back()->totalTime;
-    
-    switch(currentFrame.frameType){
-        case 1 : { // Flocking
-            
-            break;
-        }
-        case 2 : { // Mesh and Colors
-            currentFrame.points = sequence.back()->points;
-            currentFrame.pointColors = sequence.back()->pointColors;
-            
-            if(currentFrame.points.size() > 0){
-                
-                //change this to activate the whole particle system
-//                for(int i = 0; i < currentFrame.points.size(); i++){
-//                    particleSystem[i].setTarget(currentFrame.points[i].x+cubeResolution/2, currentFrame.points[i].y+cubeResolution/2, currentFrame.points[i].z+cubeResolution/2);
-//                    if(currentFrame.pointColors.size() > 0){
-//                        particleSystem[i].targetColor = currentFrame.pointColors[i];
-//                    }
-//                }
-                
-                //load Frame only gets called once on transition
-                //convert one point to be the origin point and figure out distance in relation to that.
-                //Find the direction and the magnitude from the "origin point"/vertex
-                //Store that mag and direction for the two other points on the triangle
-                //then draw a vertex at that distance and direction from the "origin" point of the particle
-                
+                if(currentFrame.points.size() > 0){
                 int count = 0;
                 
                 //triangulation
                 for(int i = 0; i < currentFrame.points.size(); i+=3){
                     
-                    //The first point of each triangle is the "origin"
-//                    particleSystem[i].setTarget(currentFrame.points[i].x+cubeResolution/2, currentFrame.points[i].y+cubeResolution/2, currentFrame.points[i].z+cubeResolution/2);
-                    
-                    //do I really need to break it down to mag and direction to figure this out?
-                    //can I not just store the length? no....
-                    //how to get the vector from origin in direction X mag?
-                    
-                    //where p1 and p2 are an ofVec3f which is the directional vector of:
-                    //point 0 or ORIGIN minus (as in vector subtraction) the original point 1 and 2
-                    //This is then just added(?) to the point 0 only in the draw of the particle.
-//                    particleSystem[i].p1
-//                     particleSystem[i].p2
-                    
-              
-                    
-                    if(count < 2000){
+                    if(count < kBinnedParticles){
                         ofVec3f diff1 = currentFrame.points[i] - currentFrame.points[i+1];
                         ofVec3f diff2 = currentFrame.points[i] - currentFrame.points[i+2];
+                        
                         
                         particleSystem[count].setTarget(currentFrame.points[i].x+cubeResolution/2, currentFrame.points[i].y+cubeResolution/2, currentFrame.points[i].z+cubeResolution/2);
                         
@@ -208,11 +241,136 @@ void Control::loadFrame(){
                             particleSystem[count].p1Color  = currentFrame.pointColors[i+2];
                         }
                     }
-
+                    
                     count ++;
                 }
+                }
+//                particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
+                
+                
+                
+                break;
+            }
+            default :
+                break;
+                
+        }
+        
+    
+    
+    particleSystem.update(ofGetLastFrameTime());
+    
+    
+}
+
+void Control::loadFrame(){
+    
+    currentFrame.frameType = sequence.back()->frameType;
+    currentFrame.totalTime = sequence.back()->totalTime;
+    
+    switch(currentFrame.frameType){
+        case 1 : { // Flocking
+            if(sequence.back()->leader != -1){
+                currentFrame.leader = sequence.back()->leader;
+            }else{
+                currentFrame.leader = ofRandom(200,kBinnedParticles-200);
+            }
+            
+            
+            break;
+        }
+        case 2 : { // Mesh and Colors
+//            currentFrame.points = sequence.back()->points;
+//            currentFrame.pointColors = sequence.back()->pointColors;
+            
+            currentFrame.renderMesh = sequence.back()->renderMesh;
+            
+            
+//            if(sequence.back()->mesh.getVertices().size() > 0 && sequence.back()->particles.size() == 0){
+            
+                
+//                for (int i = 0; i < sequence.back()->mesh.getIndices().size()-3; i++){
+//
+//                        float x = ofRandom(0, cubeResolution) ;
+//                        float y = ofRandom(0, cubeResolution) ;
+//                        float z = ofRandom(0, cubeResolution) ;
+//                        BinnedParticle particle(x, y, z, 0, 0, 0);
+//
+//
+//
+//                        ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
+//                        particle.setTarget(t.x,t.y,t.z);
+//
+//                        ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
+//                        ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
+//
+//                        particle.p1 = diff1;
+//                        particle.p2 = diff2;
+//
+//                        particle.targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
+//                        particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
+//                        particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
+//
+//                        sequence.back()->particles.push_back(particle);
+//
+//                }
+//
+//
+//            }else{
+//
+//            }
+            
+            
+            
+            for(int i = 0; i < particleSystem.size(); i++) {
+                
+                particleSystem[i].setTarget(particleSystem[i].x, particleSystem[i].y, 0);
                 
             }
+            
+            if(sequence.back()->mesh.getVertices().size() > 0){
+                currentFrame.mesh = sequence.back()->mesh;
+            }
+            
+            if(currentFrame.mesh.getVertices().size() > 0){
+                int count = 0;
+                
+                //triangulation
+
+//                cout << currentFrame.mesh.getIndices().size() << endl;
+//                cout << currentFrame.mesh.getVertices().size() << endl;
+                    for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i++){
+                        
+                        if(count < kBinnedParticles){ //need to actually do the triangulation thing....
+                            
+                            ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
+                            particleSystem[count].setTarget(t.x,t.y,t.z);
+                            
+                            ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
+                            ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
+                            
+                            particleSystem[count].p1 = diff1;
+                            particleSystem[count].p2 = diff2;
+                            
+                            particleSystem[count].targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
+                            particleSystem[count].p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
+                             particleSystem[count].p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
+     
+                            count ++;
+                        }
+                    }
+                    
+//                cout << count << endl;
+                
+            }
+            
+            
+            break;
+        }
+        case 3 : { // Mesh and Colors
+            currentFrame.mesh = sequence.back()->mesh;
+            currentFrame.renderMesh = sequence.back()->renderMesh;
+            
             break;
         }
         default : {
@@ -230,6 +388,13 @@ void Control::loadFrame(){
 //Keep only display in here so that can swivel around a static state
 void Control::draw(){
     particleSystem.draw();
+    
+
+    if(currentFrame.mesh.getVertices().size() > 0 && currentFrame.renderMesh){
+        currentFrame.mesh.drawWireframe();
+    }
+    
+    
 }
 
 void Control::drawStats(){
@@ -239,5 +404,27 @@ void Control::drawStats(){
     ofDrawBitmapString(ofToString((int) (ofGetElapsedTimeMillis() - startTime)) + " millis",32,72);
 }
 
+void Control::exportPLY(){
+    frame temp;
+    PlyRW w;
+    
+    for(int i = 0; i < particleSystem.size(); i++){
+        if(particleSystem[i].exp){ //uninitialized
+            ofVec3f p = ofVec3f(particleSystem[i].x,particleSystem[i].y,particleSystem[i].z);
+            ofVec3f p1 = ofVec3f(p.x + particleSystem[i].p1.x, p.y + particleSystem[i].p1.y, p.z + particleSystem[i].p1.z);
+            ofVec3f p2 = ofVec3f(p.x + particleSystem[i].p2.x, p.y + particleSystem[i].p2.y, p.z + particleSystem[i].p2.z);
+            if(p.distance(p1) < 30 && p.distance(p2) < 30){
+                temp.points.push_back(p);
+                temp.points.push_back(p1);
+                temp.points.push_back(p2);
+                temp.pointColors.push_back(particleSystem[i].targetColor);
+                temp.pointColors.push_back(particleSystem[i].p1Color);
+                temp.pointColors.push_back(particleSystem[i].p2Color);
+            }
+   
+        }
+    }
 
+    w.write(temp,"pointCloud_"+ofGetTimestampString());
+}
 

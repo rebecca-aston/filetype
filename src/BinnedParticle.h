@@ -23,7 +23,7 @@ public:
     float zt;
     
     ofColor color, targetColor, p1Color, p2Color;
-    bool target,triMode;
+    bool target,triMode, exp;
     float targetDist;
     
     ofVec3f p1, p2;

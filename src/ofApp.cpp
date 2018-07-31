@@ -115,7 +115,8 @@ void ofApp::drawGrid() {
 
 //--------------------------------------------------------------
 void ofApp::exportMeshButtonPressed(){
-    
+    cout << "Exporting" << endl;
+    control.exportPLY();
 }
 
 //--------------------------------------------------------------

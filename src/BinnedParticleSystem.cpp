@@ -12,9 +12,9 @@ void BinnedParticleSystem::setup(int width, int height, int k) {
 	xBins = (int) ceilf((float) width / (float) binSize);
 	yBins = (int) ceilf((float) height / (float) binSize);
     zBins = (int) ceilf((float) height / (float) binSize); //add depth??
-    cout << xBins << endl;
-    cout << yBins << endl;
-    cout << xBins * yBins << endl;
+//    cout << xBins << endl;
+//    cout << yBins << endl;
+//    cout << xBins * yBins << endl;
 	bins.resize(xBins * yBins * zBins);
 }
 
@@ -25,6 +25,13 @@ void BinnedParticleSystem::setTimeStep(float timeStep) {
 void BinnedParticleSystem::add(BinnedParticle particle) {
 	particles.push_back(particle);
 }
+
+//idea is to always have max number of particles actively in the system
+//But to be deactivating/freeing up the oldest particles as new ones are being added.
+//Not actually pop but some other method...
+//void BinnedParticleSystem::pop(BinnedParticle * particle) {
+//    particles.pop_front(particle);
+//}
 
 unsigned BinnedParticleSystem::size() const {
 	return particles.size();

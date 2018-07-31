@@ -101,6 +101,7 @@ void BinnedParticle::align(float _xv, float _yv, float _zv) {
 
 void BinnedParticle::setTarget(float _x, float _y, float _z) {
     target = true;
+    exp = true;
     xt = _x;
     yt = _y;
     zt = _z;
