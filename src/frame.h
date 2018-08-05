@@ -24,11 +24,16 @@ struct frame {
     vector< ofVec3f > points; //default constructed to be empty
     vector< ofColor > pointColors;
     
+    vector< ofVec3f > pointsB; //default constructed to be empty
+    vector< ofColor > pointColorsB;
+    
+    
     ofMesh mesh;
     
     int leader;
     int newActiveP;
     
     vector< BinnedParticle > particles;
+
 
 };

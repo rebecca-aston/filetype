@@ -23,7 +23,17 @@ void BinnedParticleSystem::setTimeStep(float timeStep) {
 }
 
 void BinnedParticleSystem::removeAtIndex(int i) {
-    particles.erase(particles.begin() + i);
+    
+    
+    //NOT ARRIVING!!!
+
+//    particles.erase(particles.begin() + i);
+//    cout << particles.size() << endl;
+    
+    particles.pop_back();
+    
+    
+    
 }
 
 void BinnedParticleSystem::popFront(int amt) { 
@@ -33,7 +43,7 @@ void BinnedParticleSystem::popFront(int amt) {
 }
 
 void BinnedParticleSystem::add(BinnedParticle particle) {
-	particles.push_back(particle);
+	particles.push_front(particle);
 }
 
 void BinnedParticleSystem::clear(){
@@ -395,7 +405,7 @@ void BinnedParticleSystem::draw() {
 	int n = particles.size();
     glPointSize(5);
 //    glBegin(GL_POINTS);
-    for(int i = 0; i < n; i+=3){
+    for(int i = 0; i < n; i++){
 //            glBegin(GL_TRIANGLES);
 //        for(int j = i; j < i+3; j++){
 //            particles[j].draw();

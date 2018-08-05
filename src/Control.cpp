@@ -44,12 +44,7 @@ void Control::setup(){
     
     //Load in all json frames from data files into the frames deque
     
-    frame test2;
-    test2.frameType = 1;
-    test2.totalTime = 30000;
-
-    
-    frames.push_back( test2 );
+ 
     
     //This is an edit tool to load in models and convert to my file format
     PlyRW plyR;
@@ -61,20 +56,8 @@ void Control::setup(){
 
     
     
-    frame test1;
-    test1.frameType = 2;
-    test1.totalTime = 20000;
-    
-    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+  
 
-    
-    for(int i = 0; i < test1.mesh.getVertices().size();i++){
-        test1.mesh.setVertex(i, test1.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-    }
-    
-    
-    frames.push_back( test1 );
-    
     
   
     
@@ -94,6 +77,49 @@ void Control::setup(){
     
     frames.push_back( test5 );
     
+    
+    
+        frame one;
+        one.frameType = 1;
+        one.totalTime = 10000;
+        frames.push_back( one );
+    
+    frame test1;
+    test1.frameType = 2;
+    test1.totalTime = 600;
+    
+    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+    
+    
+    for(int i = 0; i < test1.mesh.getVertices().size();i++){
+        test1.mesh.setVertex(i, test1.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+    }
+    
+    
+    frames.push_back( test1 );
+    
+
+    
+    
+    frame test3;
+    test3.frameType = 2;
+    test3.totalTime = 500;
+    //    test3.renderMesh = true;
+    
+    test3.mesh = plyR.read("contextDecimated0.5.ply", kBinnedParticles);
+    
+    for(int i = 0; i < test3.mesh.getVertices().size();i++){
+        test3.mesh.setVertex(i, test3.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+    }
+    
+    
+    frames.push_back( test3 );
+    
+    
+    frame test2;
+    test2.frameType = 1;
+    test2.totalTime = 2000;
+    frames.push_back( test2 );
 
     frame test4;
     test4.frameType = 2;
@@ -111,19 +137,7 @@ void Control::setup(){
 
 
     
-    frame test3;
-    test3.frameType = 2;
-    test3.totalTime = 20000;
-    //    test3.renderMesh = true;
-    
-    test3.mesh = plyR.read("contextDecimated0.5.ply", kBinnedParticles);
-    
-    for(int i = 0; i < test3.mesh.getVertices().size();i++){
-        test3.mesh.setVertex(i, test3.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-    }
-    
-    
-    frames.push_back( test3 );
+ 
     
     
     
@@ -160,15 +174,7 @@ void Control::update(){
         }
     }
     
-//    //Manage size of backburnder system ???
-    //pop_front is not good
-//    if(backBurnerSystem.size() > 0 ){
-//        int pf = (backBurnerSystem.size()>kBinnedParticles)?kBinnedParticles-backBurnerSystem.size(): 1;
-//        backBurnerSystem.popFront(pf);
-//    }
     
-
-
    //particle system update logic
     particleSystem.setTimeStep(timeStep);
     backBurnerSystem.setTimeStep(timeStep);
@@ -201,7 +207,7 @@ void Control::update(){
                 }
                 
                 
-                for(int i = MAX(0,currentFrame.leader - 20); i < MIN(particleSystem.size(),currentFrame.leader + 20); i++){
+                for(int i = MAX(0,currentFrame.leader - 10); i < MIN(particleSystem.size(),currentFrame.leader + 10); i++){
                     BinnedParticle& cur = particleSystem[i];
                     vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
                     
@@ -277,15 +283,39 @@ void Control::update(){
     
     //placeholder for better system (i.e. single axis force (float down, or float sideways)
     //better to add just a directional global force than having to set targets or something.
-    backBurnerSystem.addAttractionForce(ofRandom(0,cubeResolution), ofRandom(0,cubeResolution), 0, 1000, 0.1);
+//    backBurnerSystem.addAttractionForce(ofRandom(0,cubeResolution), ofRandom(0,cubeResolution), 0, 1000, 0.1);
     
     //Definitely add a directional force option... will be lighter on the system....
     
+    //Random deactivation of particles.
+    //tie in the rate of deletion to the speed of addition somehow??
+    
+    //add in export backburner
+    
+    if(backBurnerSystem.size() > 0 ){//&& ofGetFrameNum()%5 == 0
+        int rand = ofRandom(0,backBurnerSystem.size());
+//        int range = MIN(backBurnerSystem.size(), rand+10);
+//        for(int i = rand; i < range; i++) {
+            if(backBurnerSystem[rand].life == 100000) backBurnerSystem[rand].setLife(255); //CHANGE THIS
+//        }
+    }
+
+    
     for(int i = 0; i < backBurnerSystem.size(); i++) {
         BinnedParticle& cur = backBurnerSystem[i];
-        if(cur.life < 0) backBurnerSystem.removeAtIndex(i);
-        cur.bounceOffWalls(0, 0, backBurnerSystem.getWidth(), backBurnerSystem.getHeight());
-        cur.addDampingForce();
+        if(cur.z > 0) {
+            backBurnerSystem.force(cur,cur.x,cur.y,0, 10000, -.01);
+            
+        }
+        
+
+        
+        if( backBurnerSystem[i].life <= 0) {
+//            cout << backBurnerSystem[i].life << endl;
+            backBurnerSystem.removeAtIndex(i);
+        }
+        cur.waveFloor(0, 0, backBurnerSystem.getWidth(), backBurnerSystem.getHeight());
+//        cur.addDampingForce();
     }
     
     particleSystem.update(ofGetLastFrameTime());
@@ -350,14 +380,17 @@ void Control::loadFrame(){
                 
                 
                 
-                for (int i = 0; i < sequence.back()->mesh.getIndices().size()-3; i++){
+                for (int i = 0; i < sequence.back()->mesh.getIndices().size()-3; i+=3){
                     
-                    float x = ofRandom(0, cubeResolution) ;
-                    float y = ofRandom(0, cubeResolution) ;
-                    float z = ofRandom(0, cubeResolution) ;
-                    BinnedParticle particle(x, y, z, 0, 0, 0);
+//                    float x = ofRandom(0, cubeResolution) ;
+//                    float y = ofRandom(0, cubeResolution) ;
+//                    float z = ofRandom(0, cubeResolution) ;
+//                    BinnedParticle particle(x, y, z, 0, 0, 0);
                     
                     ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
+                    
+                    BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
+                    
                     particle.setTarget(t.x,t.y,t.z);
                     
                     ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
@@ -389,7 +422,7 @@ void Control::loadFrame(){
                     sequence[i]->particles = particleSystem.getParticles();
                     for(int j = 0; j < sequence[i]->particles.size(); j++ ){
                         backBurnerSystem.add(sequence[i]->particles[j]);
-                        backBurnerSystem[i].setLife(ofRandom(100,10000));
+//                        backBurnerSystem[i].setTarget(backBurnerSystem[i].x,backBurnerSystem[i].y,0);
                     }
                     particleSystem.clear();
                     break;
@@ -488,6 +521,24 @@ void Control::exportPLY(){
                 temp.pointColors.push_back(particleSystem[i].p2Color);
             }
    
+        }
+    }
+    
+    
+    for(int i = 0; i < backBurnerSystem.size(); i++){
+        if(backBurnerSystem[i].exp){ //uninitialized
+            ofVec3f p = ofVec3f(backBurnerSystem[i].x,backBurnerSystem[i].y,backBurnerSystem[i].z);
+            ofVec3f p1 = ofVec3f(p.x + backBurnerSystem[i].p1.x, p.y + backBurnerSystem[i].p1.y, p.z + backBurnerSystem[i].p1.z);
+            ofVec3f p2 = ofVec3f(p.x + backBurnerSystem[i].p2.x, p.y + backBurnerSystem[i].p2.y, p.z + backBurnerSystem[i].p2.z);
+            if(p.distance(p1) < 30 && p.distance(p2) < 30){
+                temp.pointsB.push_back(p);
+                temp.pointsB.push_back(p1);
+                temp.pointsB.push_back(p2);
+                temp.pointColorsB.push_back(backBurnerSystem[i].targetColor);
+                temp.pointColorsB.push_back(backBurnerSystem[i].p1Color);
+                temp.pointColorsB.push_back(backBurnerSystem[i].p2Color);
+            }
+            
         }
     }
 

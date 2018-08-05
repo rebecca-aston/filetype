@@ -29,7 +29,16 @@ void BinnedParticle::updatePosition(float timeStep) {
 	y += yv * timeStep;
     z += zv * timeStep;
     
-    life -= ofRandom(10,50);
+
+    if(life < 100000 ) {
+        
+        life -= 0.1;
+
+        targetColor = ofColor(targetColor.r,targetColor.g,targetColor.b,MAX(0,life));
+    }
+    
+
+    
     
     if(target && targetDist < 10) {
         xv = 0;
@@ -51,34 +60,36 @@ void BinnedParticle::resetForce() {
 void BinnedParticle::bounceOffWalls(float left, float top, float right, float bottom, float damping) {
 	bool collision = false;
 
-	if (x > right){
+    if (x > right){
         x = right;//-10;
-		xv *= -1;
-		collision = true;
-	} else if (x < left){
+        xv *= -1;
+        collision = true;
+    } else if (x < left){
         x = left;//+10;
-		xv *= -1;
-		collision = true;
-	}
+        xv *= -1;
+        collision = true;
+    }
 
-	if (y > bottom){
+    if (y > bottom){
         y = bottom;//-10;
-		yv *= -1;
-		collision = true;
-	} else if (y < top){
+        yv *= -1;
+        collision = true;
+    } else if (y < top){
         y = top;//+10;
-		yv *= -1;
-		collision = true;
-	}
+        yv *= -1;
+        collision = true;
+    }
 
     //Change to depth??
     if (z > bottom){
         z = bottom;//-10;
         zv *= -1;
+        
         collision = true;
+        
     } else if (z < top){
-        z = top;//+10;
-        zv *= -1;
+        z = top;
+        zv *= -1.5;
         collision = true;
     }
     
@@ -88,6 +99,58 @@ void BinnedParticle::bounceOffWalls(float left, float top, float right, float bo
         zv *= damping;
 	}
 }
+
+void BinnedParticle::waveFloor(float left, float top, float right, float bottom, float damping) {
+    bool collision = false;
+    
+    if (x > right){
+        x = right;//-10;
+        xv *= -1;
+        collision = true;
+    } else if (x < left){
+        x = left;//+10;
+        xv *= -1;
+        collision = true;
+    }
+    
+    if (y > bottom){
+        y = bottom;//-10;
+        yv *= -1;
+        collision = true;
+    } else if (y < top){
+        y = top;//+10;
+        yv *= -1;
+        collision = true;
+    }
+    
+    //Change to depth??
+    if (z > bottom){
+        z = bottom;//-10;
+        zv *= -1;
+        
+        
+        
+        collision = true;
+        
+        //less / greater than position in x along noise
+        
+        
+        
+    } else if (z < (top+ofNoise(x*ofGetFrameNum()*01)*400)){
+//                z = (top+ofNoise(x*ofGetFrameNum()*01)*400);//+10;
+        zv *= -1.5;
+        collision = true;
+    }
+    
+    if (collision == true){
+        xv *= damping;
+        yv *= damping;
+        zv *= damping;
+    }
+}
+
+
+
 
 void BinnedParticle::addDampingForce(float damping) {
 	xf -= xv * damping;
@@ -110,7 +173,9 @@ void BinnedParticle::setTarget(float _x, float _y, float _z) {
 }
 
 void BinnedParticle::setLife(int l){
+    
     life = l;
+
 }
 
 //Binned particle has one main node

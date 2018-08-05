@@ -61,8 +61,7 @@ ofMesh PlyRW::read(string s, int numParticles){
 //--------------------------------------------------------------
 void PlyRW::write(frame f, string fileName) {
 
-    ofMesh expMesh;
-    int vertCount;
+    ofMesh expMesh, expMeshB;
 
     //add all spheres to one mesh, with Indices update to reflect new vertex positions
     for(int i = 0; i < f.points.size(); i++){
@@ -73,7 +72,17 @@ void PlyRW::write(frame f, string fileName) {
 //        expMesh.addIndex(i);
 
     }
+    
+    for(int i = 0; i < f.pointsB.size(); i++){
+        
+        expMeshB.addVertex(f.pointsB[i]);
+        expMeshB.addColor(f.pointColorsB[i]);
+        
+        //        expMesh.addIndex(i);
+        
+    }
 
     expMesh.save(fileName+".ply");
+    expMeshB.save(fileName+"_BackBurner.ply");
 }
 

@@ -8,6 +8,7 @@ public:
 	void updatePosition(float timeStep);
 	void resetForce();
 	void bounceOffWalls(float left, float top, float right, float bottom, float damping = .3);// just make resolution?
+    void waveFloor(float left, float top, float right, float bottom, float damping = .3);
 	void addDampingForce(float damping = .01);
     void align(float _xv, float _yv, float _zv);
     void setTarget(float x, float y, float z);
@@ -29,5 +30,5 @@ public:
     
     ofVec3f p1, p2;
     
-    int life;
+    float life;
 }; 
