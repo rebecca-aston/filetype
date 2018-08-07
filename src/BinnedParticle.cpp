@@ -2,15 +2,6 @@
 
 #include "ofGraphics.h"
 
-
-//THings to add
-//A target.. will serve as the point in a new mesh for example
-//And distance to target... this will just be the length of the force that is already being calculated
-// in addForce and just stored in the particle too
-// this will be used to lerp between colors
-// and can also be used to do size/rendering mapping like the nice discovery from Machine learning project
-
-
 BinnedParticle::BinnedParticle(float x, float y, float z, float xv, float yv, float zv, float l) :
 	x(x), y(y), z(z),
 	xv(xv), yv(yv), zv(zv), life(l) {
@@ -29,16 +20,13 @@ void BinnedParticle::updatePosition(float timeStep) {
 	y += yv * timeStep;
     z += zv * timeStep;
     
-
+    //needs work
     if(life < 100000 ) {
         
         life -= 0.1;
 
         targetColor = ofColor(targetColor.r,targetColor.g,targetColor.b,MAX(0,life));
     }
-    
-
-    
     
     if(target && targetDist < 10) {
         xv = 0;
@@ -149,9 +137,6 @@ void BinnedParticle::waveFloor(float left, float top, float right, float bottom,
     }
 }
 
-
-
-
 void BinnedParticle::addDampingForce(float damping) {
 	xf -= xv * damping;
 	yf -= yv * damping;
@@ -166,7 +151,6 @@ void BinnedParticle::align(float _xv, float _yv, float _zv) {
 
 void BinnedParticle::setTarget(float _x, float _y, float _z) {
     target = true;
-    exp = true;
     xt = _x;
     yt = _y;
     zt = _z;

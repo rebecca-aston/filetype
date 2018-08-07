@@ -6,29 +6,31 @@ void ofApp::setup(){
     
     control.setup();
     
-    //GUI
-    gui.setup();
-    
-    //Button listeners calling functions below
-    exportMeshButton.addListener(this, &ofApp::exportMeshButtonPressed);
-
-
-    //Toggles declared in ofApp.h
-    gui.add(toggle_axis.setup("axis", true));
-    gui.add(toggle_grid.setup("grid", true));
-    gui.add(pause.setup("pause", false));
-
-    
-    //Buttons declared in ofApp.h
-    gui.add(exportMeshButton.setup("Export Mesh"));
-
-    
     
     glShadeModel(GL_FLAT);
     light.setAreaLight(20, 20);
     light.setPosition(0, -1000, 0);
     
 }
+void ofApp::setupSecondScreen(){
+    //GUI
+    gui.setup();
+    
+    //Button listeners calling functions below
+    exportMeshButton.addListener(this, &ofApp::exportMeshButtonPressed);
+    
+    
+    //Toggles declared in ofApp.h
+    gui.add(toggle_axis.setup("axis", true));
+    gui.add(toggle_grid.setup("grid", true));
+    gui.add(pause.setup("pause", false));
+    
+    
+    //Buttons declared in ofApp.h
+    gui.add(exportMeshButton.setup("Export Mesh"));
+
+}
+
 
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -65,14 +67,15 @@ void ofApp::draw(){
     cam.end();
     
     //disables depth so gui text is visible in 2D in top of 3D cam
-    ofDisableDepthTest();
+//    ofDisableDepthTest();
+
+}
+
+void ofApp::drawSecondScreen(ofEventArgs & args){
     ofSetColor(255);
     gui.draw();
-
     
-    control.drawStats(); 
-    
-
+    control.drawStats();
 }
 
 //--------------------------------------------------------------

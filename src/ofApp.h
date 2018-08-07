@@ -12,6 +12,10 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
     
+        void setupSecondScreen();
+//        void update();
+        void drawSecondScreen(ofEventArgs & args);
+    
         void drawAxis();
         void drawGrid();
         void sendOsc();

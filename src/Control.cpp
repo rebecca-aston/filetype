@@ -24,13 +24,10 @@ void Control::setup(){
     //The active particles
     particleSystem.setup(cubeResolution, cubeResolution, binPower);
     
-    
-    //Particle fragments get loaded into here, ONLY for gloabl forces
-    //no per-particle forces
+    kBinnedParticles = 50000;//25000 is enough to do all triangles
     backBurnerSystem.setup(cubeResolution*1.5, cubeResolution*1.5, binPower);
     
 
-    kBinnedParticles = 50000;//25000 is enough to do all triangles
     
     
 //    for(int i = 0; i < kBinnedParticles; i++) {
@@ -161,6 +158,13 @@ void Control::setup(){
 
 void Control::update(){
     
+    //Check animation timing to see if should load in new frame
+    //Then loadFrame()
+    
+    //Rather than time based... should probably just be stay in the holding pattern
+    //Until new data is added
+    //But not sure....
+    
     if(!currentFrame.animating){
         startTime = ofGetElapsedTimeMillis();
         currentFrame.animating = true;
@@ -175,22 +179,28 @@ void Control::update(){
     }
     
     
-   //particle system update logic
+    //Current setup
+    //Main particle system that is the sort of "active" state
+    //The new frame is loading in.
+    //Then there is another "system" which is the scattered accumulation of particles
+    //This is currently mostly a techincal consideration rather than a conceptual one
+    //Have the secondary system only be activated by less computationally expensive actions
+    // maybe re-think the setup?
+    
+    //ACTIVE
     particleSystem.setTimeStep(timeStep);
+    //BACKGROUND
     backBurnerSystem.setTimeStep(timeStep);
     
-    // do this once per frame
+    //ACTIVE
     particleSystem.setupForces();
+    //BACKGROUND
     backBurnerSystem.setupForces();
     
-
-        //        write better flow field
-        //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
         
         switch(currentFrame.frameType){
             case 1 : { // Flocking
 
-                
                 for(int i = 0; i < particleSystem.size(); i++) {
                     BinnedParticle& cur = particleSystem[i];
                     //                vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
@@ -206,7 +216,8 @@ void Control::update(){
                     cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
                 }
                 
-                
+                //Only apply flocking to a random selection of particles
+                //Maybe a better way to do it, but keeps things lighter on the system while preserving some nice behavior
                 for(int i = MAX(0,currentFrame.leader - 10); i < MIN(particleSystem.size(),currentFrame.leader + 10); i++){
                     BinnedParticle& cur = particleSystem[i];
                     vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
@@ -218,18 +229,14 @@ void Control::update(){
                     particleSystem.addRepulsionForce(cur, 70, .1);
                     particleSystem.addAttractionForce(cur, 50, .3);
  
-   
                 }
                 
-                
                 particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
-            
                 
                 break;
             }
-            case 2 : { // Mesh and Colors to
+            case 2 : { // Mesh and Colors in active particle sys
                 
-            
                 for(int i = 0; i < particleSystem.size(); i++) {
                     BinnedParticle& cur = particleSystem[i];
                     
@@ -241,38 +248,7 @@ void Control::update(){
 
                 break;
             }
-            case 3 : { // Mesh and Colors to
-                
-                if(currentFrame.points.size() > 0){
-                int count = 0;
-                
-                //triangulation
-                for(int i = 0; i < currentFrame.points.size(); i+=3){
-                    
-                    if(count < kBinnedParticles){
-                        ofVec3f diff1 = currentFrame.points[i] - currentFrame.points[i+1];
-                        ofVec3f diff2 = currentFrame.points[i] - currentFrame.points[i+2];
-                        
-                        
-                        particleSystem[count].setTarget(currentFrame.points[i].x+cubeResolution/2, currentFrame.points[i].y+cubeResolution/2, currentFrame.points[i].z+cubeResolution/2);
-                        
-                        particleSystem[count].p1 = diff1;
-                        particleSystem[count].p2 = diff2;
-                        
-                        
-                        if(currentFrame.pointColors.size() > 0){
-                            particleSystem[count].targetColor = currentFrame.pointColors[i];
-                            particleSystem[count].p1Color  = currentFrame.pointColors[i+1];
-                            particleSystem[count].p1Color  = currentFrame.pointColors[i+2];
-                        }
-                    }
-                    
-                    count ++;
-                }
-                }
-//                particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
-                
-                
+            case 3 : { // Mesh draw
                 
                 break;
             }
@@ -281,17 +257,21 @@ void Control::update(){
                 
         }
     
-    //placeholder for better system (i.e. single axis force (float down, or float sideways)
-    //better to add just a directional global force than having to set targets or something.
-//    backBurnerSystem.addAttractionForce(ofRandom(0,cubeResolution), ofRandom(0,cubeResolution), 0, 1000, 0.1);
     
-    //Definitely add a directional force option... will be lighter on the system....
     
-    //Random deactivation of particles.
-    //tie in the rate of deletion to the speed of addition somehow??
+    //BACKGROUND
     
-    //add in export backburner
+    //Maybe better to think of this background as the flow field / global forces (although ff might be too heavy)
+    //Map data / trade routes getting thrown in as movement/flow vectors..
     
+    //        write better flow field
+    //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
+    
+    //Definitely add a directional force option... in either just x / y / z... will be lighter on the system....
+    //backBurnerSystem.addAttractionForce(ofRandom(0,cubeResolution), ofRandom(0,cubeResolution), 0, 1000, 0.1);
+    
+    //Why is the fading thing not working?? figure out
+    //Fade particles out over time so does not look abrupt
     if(backBurnerSystem.size() > 0 ){//&& ofGetFrameNum()%5 == 0
         int rand = ofRandom(0,backBurnerSystem.size());
 //        int range = MIN(backBurnerSystem.size(), rand+10);
@@ -300,27 +280,24 @@ void Control::update(){
 //        }
     }
 
-    
     for(int i = 0; i < backBurnerSystem.size(); i++) {
         BinnedParticle& cur = backBurnerSystem[i];
         if(cur.z > 0) {
             backBurnerSystem.force(cur,cur.x,cur.y,0, 10000, -.01);
-            
         }
         
-
-        
-        if( backBurnerSystem[i].life <= 0) {
+        if( backBurnerSystem[i].life <= 0) {// clean up particle system (may be a memory leak somewhere)
 //            cout << backBurnerSystem[i].life << endl;
             backBurnerSystem.removeAtIndex(i);
         }
-        cur.waveFloor(0, 0, backBurnerSystem.getWidth(), backBurnerSystem.getHeight());
-//        cur.addDampingForce();
+        cur.waveFloor(0, 0, backBurnerSystem.getWidth(), backBurnerSystem.getHeight()); // needs work
     }
     
-    particleSystem.update(ofGetLastFrameTime());
-    backBurnerSystem.update(ofGetLastFrameTime());
     
+    //ACTIVE
+    particleSystem.update(ofGetLastFrameTime());
+    //BACKGROUND
+    backBurnerSystem.update(ofGetLastFrameTime());
     
 }
 
@@ -334,19 +311,6 @@ void Control::draw(){
         currentFrame.mesh.drawWireframe();
     }
     
-    
-//    //NO they look sad
-//    //BUT also there is something strange happening with how the vectors are being stored / added.
-//    for(int i = 0;i < sequence.size();i++){
-//        if(sequence[i]->uID != particleSystem.getOwner() && sequence[i]->particles.size() > 0) {
-//            
-//            for(int j = 0;j < sequence[i]->particles.size();j++){
-//                sequence[i]->particles[j].draw();
-//            }
-//
-//        }
-//    }
-    
 }
 
 
@@ -357,39 +321,37 @@ void Control::loadFrame(){
     
     switch(currentFrame.frameType){
         case 1 : { // Flocking
+            
             if(sequence.back()->leader != -1){
                 currentFrame.leader = sequence.back()->leader;
             }else{
                 currentFrame.leader = ofRandom(0,sequence.back()->particles.size());
             }
             
-            
             break;
         }
         case 2 : { // Mesh and Colors
-            //            currentFrame.points = sequence.back()->points;
-            //            currentFrame.pointColors = sequence.back()->pointColors;
-            
+
+            //Boolean to draw full mesh in addition to particle sys version
             currentFrame.renderMesh = sequence.back()->renderMesh;
-            
             
             if(sequence.back()->mesh.getVertices().size() > 0 && sequence.back()->particles.size() == 0){
                 
-                
                 currentFrame.mesh = sequence.back()->mesh;
                 
-                
-                
-                for (int i = 0; i < sequence.back()->mesh.getIndices().size()-3; i+=3){
+                for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i+=3){
                     
-//                    float x = ofRandom(0, cubeResolution) ;
-//                    float y = ofRandom(0, cubeResolution) ;
-//                    float z = ofRandom(0, cubeResolution) ;
-//                    BinnedParticle particle(x, y, z, 0, 0, 0);
+                    
+                    //Rather than having random positioning
+                    //get a previous particle position that is being loaded out of the system and if
+                    //size() is large add random.
+                    
+                    float x = ofRandom(0, cubeResolution) ;
+                    float y = ofRandom(0, cubeResolution) ;
+                    float z = ofRandom(0, cubeResolution) ;
+                    BinnedParticle particle(x, y, z, 0, 0, 0);
                     
                     ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
-                    
-                    BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
                     
                     particle.setTarget(t.x,t.y,t.z);
                     
@@ -403,20 +365,27 @@ void Control::loadFrame(){
                     particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
                     particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
                     
-                    sequence.back()->particles.push_back(particle);
+                    sequence.back()->particles.push_back(particle); //unnesseccary storage of the particle arrays / for memory that is
                     
                 }
                 
-                
             }
-            
             
             //find best wat to do this but for now ok.
             
+            //Hmmm maybe get rid of this.... rather than re-storing the particle data just start from scratch again
+            //Only keep a buffer of frames
+            //Then reload if you need more...
             
             //check which frame's particles are currently loaded into the system
             //get a copy of the particles and replace the original frame's particles with modified
             //particles. will never render the frame's particles in system.
+            
+            //instead of keeping the old position of data
+            //You are always loading in
+            //Always exploding
+            //instead just putting into backburner system as flotsam
+            
             for(int i = 0;i < sequence.size();i++){
                 if(sequence[i]->uID == particleSystem.getOwner()) {
                     sequence[i]->particles = particleSystem.getParticles();
@@ -430,53 +399,14 @@ void Control::loadFrame(){
             }
             
             for (int i = 0; i < sequence.back()->particles.size(); i++){
-                
                 particleSystem.add(sequence.back()->particles[i]);
-                
             }
             
-            particleSystem.setOwner(sequence.back()->uID);
-            
-            
-            
-            
-            //                if(currentFrame.mesh.getVertices().size() > 0){
-            //                    int count = 0;
-            //
-            //                    for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i++){
-            //
-            //                        if(count < kBinnedParticles){ //need to actually do the triangulation thing....
-            //
-            //                            ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
-            //                            particleSystem[count].setTarget(t.x,t.y,t.z);
-            //
-            //                            ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
-            //                            ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
-            //
-            //                            particleSystem[count].p1 = diff1;
-            //                            particleSystem[count].p2 = diff2;
-            //
-            //                            particleSystem[count].targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
-            //                            particleSystem[count].p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
-            //                            particleSystem[count].p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
-            //
-            //                            count ++;
-            //                        }
-            //                    }
-            //
-            //                }
-            
-            
-            
-            
-            
-            
-            
-            
+            particleSystem.setOwner(sequence.back()->uID);//maybe still nice to preserve this info ?
             
             break;
         }
-        case 3 : { // Mesh and Colors
+        case 3 : { // Mesh
             currentFrame.mesh = sequence.back()->mesh;
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
@@ -495,6 +425,8 @@ void Control::loadFrame(){
 }
 
 
+//Add in more secondScreen data draw functions here
+
 void Control::drawStats(){
     ofSetColor(255);
     ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", 32, 32);
@@ -507,8 +439,10 @@ void Control::exportPLY(){
     frame temp;
     PlyRW w;
     
+    //for export it's not just the current frame, it's the whole system
+    //move into JsonRW / equivalent name eventually
+    
     for(int i = 0; i < particleSystem.size(); i++){
-        if(particleSystem[i].exp){ //uninitialized
             ofVec3f p = ofVec3f(particleSystem[i].x,particleSystem[i].y,particleSystem[i].z);
             ofVec3f p1 = ofVec3f(p.x + particleSystem[i].p1.x, p.y + particleSystem[i].p1.y, p.z + particleSystem[i].p1.z);
             ofVec3f p2 = ofVec3f(p.x + particleSystem[i].p2.x, p.y + particleSystem[i].p2.y, p.z + particleSystem[i].p2.z);
@@ -520,13 +454,9 @@ void Control::exportPLY(){
                 temp.pointColors.push_back(particleSystem[i].p1Color);
                 temp.pointColors.push_back(particleSystem[i].p2Color);
             }
-   
-        }
     }
     
-    
     for(int i = 0; i < backBurnerSystem.size(); i++){
-        if(backBurnerSystem[i].exp){ //uninitialized
             ofVec3f p = ofVec3f(backBurnerSystem[i].x,backBurnerSystem[i].y,backBurnerSystem[i].z);
             ofVec3f p1 = ofVec3f(p.x + backBurnerSystem[i].p1.x, p.y + backBurnerSystem[i].p1.y, p.z + backBurnerSystem[i].p1.z);
             ofVec3f p2 = ofVec3f(p.x + backBurnerSystem[i].p2.x, p.y + backBurnerSystem[i].p2.y, p.z + backBurnerSystem[i].p2.z);
@@ -538,8 +468,6 @@ void Control::exportPLY(){
                 temp.pointColorsB.push_back(backBurnerSystem[i].p1Color);
                 temp.pointColorsB.push_back(backBurnerSystem[i].p2Color);
             }
-            
-        }
     }
 
     w.write(temp,"pointCloud_"+ofGetTimestampString());
