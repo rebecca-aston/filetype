@@ -10,8 +10,8 @@
 
 #include "ofMain.h"
 #include "frame.h"
-#include "JsonRW.h"
-#include "PlyRW.h"
+#include "Read.h"
+#include "Write.h"
 #include "BinnedParticleSystem.h"
 #include "ofxAssimpModelLoader.h"
 
@@ -38,6 +38,9 @@ protected:
     
     frame currentFrame;
     frame * latestFrame;
+    
+    Read read;
+    Write write;
     
 public:
     Control();

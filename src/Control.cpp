@@ -42,30 +42,14 @@ void Control::setup(){
     //Load in all json frames from data files into the frames deque
     
  
-    
-    //This is an edit tool to load in models and convert to my file format
-    PlyRW plyR;
-    
-    //    PlyRW plyR;
-    
- 
-    
 
-    
-    
-  
-
-    
-  
-    
-    
     
     frame test5;
     test5.frameType = 2;
     test5.totalTime = 20000;
     
     //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
-    test5.mesh = plyR.read("LoungeCouch.ply", kBinnedParticles);
+    test5.mesh = read.readMesh("meshes/LoungeCouch.ply");
     
     for(int i = 0; i < test5.mesh.getVertices().size();i++){
         test5.mesh.setVertex(i, test5.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
@@ -85,7 +69,7 @@ void Control::setup(){
     test1.frameType = 2;
     test1.totalTime = 600;
     
-    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+    test1.mesh = read.readMesh("meshes/jug6857.ply");
     
     
     for(int i = 0; i < test1.mesh.getVertices().size();i++){
@@ -103,7 +87,7 @@ void Control::setup(){
     test3.totalTime = 500;
     //    test3.renderMesh = true;
     
-    test3.mesh = plyR.read("contextDecimated0.5.ply", kBinnedParticles);
+    test3.mesh = read.readMesh("meshes/contextDecimated0.5.ply");
     
     for(int i = 0; i < test3.mesh.getVertices().size();i++){
         test3.mesh.setVertex(i, test3.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
@@ -123,7 +107,7 @@ void Control::setup(){
     test4.totalTime = 20000;
     
     //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
-    test4.mesh = plyR.read("LungeLeftWallDecimated0.5.ply", kBinnedParticles);
+    test4.mesh = read.readMesh("meshes/LungeLeftWallDecimated0.5.ply");
     
     for(int i = 0; i < test4.mesh.getVertices().size();i++){
         test4.mesh.setVertex(i, test4.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
@@ -335,9 +319,18 @@ void Control::loadFrame(){
             //Boolean to draw full mesh in addition to particle sys version
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
-            if(sequence.back()->mesh.getVertices().size() > 0 && sequence.back()->particles.size() == 0){
+            if(sequence.back()->mesh.getVertices().size() > 0 ){ //&& sequence.back()->particles.size() == 0
                 
                 currentFrame.mesh = sequence.back()->mesh;
+                
+                
+                vector<BinnedParticle> tempVec = particleSystem.getParticles();;
+                for(int i = 0; i < tempVec.size(); i++ ){
+                    backBurnerSystem.add(tempVec[i]);
+                }
+                
+                particleSystem.clear();
+                
                 
                 for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i+=3){
                     
@@ -365,7 +358,7 @@ void Control::loadFrame(){
                     particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
                     particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
                     
-                    sequence.back()->particles.push_back(particle); //unnesseccary storage of the particle arrays / for memory that is
+                    particleSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
                     
                 }
                 
@@ -386,23 +379,33 @@ void Control::loadFrame(){
             //Always exploding
             //instead just putting into backburner system as flotsam
             
-            for(int i = 0;i < sequence.size();i++){
-                if(sequence[i]->uID == particleSystem.getOwner()) {
-                    sequence[i]->particles = particleSystem.getParticles();
-                    for(int j = 0; j < sequence[i]->particles.size(); j++ ){
-                        backBurnerSystem.add(sequence[i]->particles[j]);
-//                        backBurnerSystem[i].setTarget(backBurnerSystem[i].x,backBurnerSystem[i].y,0);
-                    }
-                    particleSystem.clear();
-                    break;
-                }
-            }
+//            for(int i = 0;i < sequence.size();i++){
+//                if(sequence[i]->uID == particleSystem.getOwner()) {
+//                    sequence[i]->particles = particleSystem.getParticles();
+//                    for(int j = 0; j < sequence[i]->particles.size(); j++ ){
+//                        backBurnerSystem.add(sequence[i]->particles[j]);
+////                        backBurnerSystem[i].setTarget(backBurnerSystem[i].x,backBurnerSystem[i].y,0);
+//                    }
+//                    particleSystem.clear();
+//                    break;
+//                }
+//            }
             
-            for (int i = 0; i < sequence.back()->particles.size(); i++){
-                particleSystem.add(sequence.back()->particles[i]);
-            }
             
-            particleSystem.setOwner(sequence.back()->uID);//maybe still nice to preserve this info ?
+//            vector<BinnedParticle> tempVec = particleSystem.getParticles();;
+//            for(int i = 0; i < tempVec.size(); i++ ){
+//                backBurnerSystem.add(tempVec[i]);
+//            }
+//
+//            particleSystem.clear();
+//
+//
+//
+//            for (int i = 0; i < sequence.back()->particles.size(); i++){
+//                particleSystem.add(sequence.back()->particles[i]);
+//            }
+            
+//            particleSystem.setOwner(sequence.back()->uID);//maybe still nice to preserve this info ?
             
             break;
         }
@@ -437,7 +440,6 @@ void Control::drawStats(){
 
 void Control::exportPLY(){
     frame temp;
-    PlyRW w;
     
     //for export it's not just the current frame, it's the whole system
     //move into JsonRW / equivalent name eventually
@@ -470,6 +472,6 @@ void Control::exportPLY(){
             }
     }
 
-    w.write(temp,"pointCloud_"+ofGetTimestampString());
+    write.writeMesh(temp,"pointCloud_"+ofGetTimestampString());
 }
 

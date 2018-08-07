@@ -7,10 +7,10 @@
 ###########################
 # ignore generated binaries
 # but not the data folder
+# !/bin/data/ (taken out for now)
 ###########################
 
 /bin/*
-!/bin/data/
 
 #########
 # general
