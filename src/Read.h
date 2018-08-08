@@ -3,15 +3,22 @@
 #include "ofxJSON.h"
 #include "ofxAssimpModelLoader.h"
 #include "frame.h"
+#include "history.h"
  
 class Read {
 
 public:
     Read();
     
-    frame readJson(string s); // return type?
-    ofMesh readMesh(string s);
+    void readModel();
+    vector< frame > readJson(string path); // return type?
+    ofMesh readMesh(string path);
+//    ofSound readSound(string path);
+    string readText(string path);
     
-    ofxJSONElement data;
+    ofDirectory modelData;
+    vector< frame > frameVec;
+    bool dev = false;
+    
 };
 

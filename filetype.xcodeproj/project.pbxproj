@@ -123,6 +123,7 @@
 		C224E0400677911C78D08627 /* poppack1.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = poppack1.h; path = ../../../addons/ofxAssimpModelLoader/libs/assimp/include/assimp/Compiler/poppack1.h; sourceTree = SOURCE_ROOT; };
 		C524ABE820FE136A00B0EC8E /* Write.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Write.cpp; sourceTree = "<group>"; };
 		C524ABE920FE136A00B0EC8E /* Write.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Write.h; sourceTree = "<group>"; };
+		C5620658211B2E5800E4F909 /* history.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = history.h; sourceTree = "<group>"; };
 		C5C548CA20FF4D5D00ED6A11 /* frame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = frame.h; sourceTree = "<group>"; };
 		C70D8946940288799E82131E /* ofxSliderGroup.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxSliderGroup.h; path = ../../../addons/ofxGui/src/ofxSliderGroup.h; sourceTree = SOURCE_ROOT; };
 		C88333E71C9457E441C33474 /* ofxButton.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxButton.cpp; path = ../../../addons/ofxGui/src/ofxButton.cpp; sourceTree = SOURCE_ROOT; };
@@ -395,6 +396,7 @@
 				DD966AAE7DCB827728ABC404 /* BinnedParticleSystem.cpp */,
 				1D20182EF077A6A7E0E9A3D2 /* BinnedParticleSystem.h */,
 				C5C548CA20FF4D5D00ED6A11 /* frame.h */,
+				C5620658211B2E5800E4F909 /* history.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;

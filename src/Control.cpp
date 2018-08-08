@@ -12,6 +12,18 @@ Control::Control(){
 }
 
 void Control::setup(){
+    
+    read.readModel();
+    
+    for(int i = 0; i < read.frameVec.size(); i++){
+        if(sequence.size() < 10){
+            sequence.push_back(&read.frameVec[i]);
+        }else{
+            break;
+        }
+    }
+    
+    
     // this number describes how many bins are used
     // on my machine, 2 is the ideal number (2^2 = 4x4 pixel bins)
     // if this number is too high, binning is not effective
@@ -28,105 +40,89 @@ void Control::setup(){
     backBurnerSystem.setup(cubeResolution*1.5, cubeResolution*1.5, binPower);
     
 
-    
-    
-//    for(int i = 0; i < kBinnedParticles; i++) {
-//        float x = ofRandom(0, cubeResolution) ;
-//        float y = ofRandom(0, cubeResolution) ;
-//        float z = ofRandom(0, cubeResolution) ;
-//        BinnedParticle particle(x, y, z, 0, 0, 0);
-//        particleSystem.add(particle);
+//    frame test5;
+//    test5.frameType = 2;
+//    test5.totalTime = 20000;
+//
+//    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+//    test5.mesh = read.readMesh("meshes/LoungeCouch.ply");
+//
+//    for(int i = 0; i < test5.mesh.getVertices().size();i++){
+//        test5.mesh.setVertex(i, test5.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
 //    }
-    
-    
-    //Load in all json frames from data files into the frames deque
-    
- 
-
-    
-    frame test5;
-    test5.frameType = 2;
-    test5.totalTime = 20000;
-    
-    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
-    test5.mesh = read.readMesh("meshes/LoungeCouch.ply");
-    
-    for(int i = 0; i < test5.mesh.getVertices().size();i++){
-        test5.mesh.setVertex(i, test5.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-    }
-    
-    
-    frames.push_back( test5 );
-    
-    
-    
-        frame one;
-        one.frameType = 1;
-        one.totalTime = 10000;
-        frames.push_back( one );
-    
-    frame test1;
-    test1.frameType = 2;
-    test1.totalTime = 600;
-    
-    test1.mesh = read.readMesh("meshes/jug6857.ply");
-    
-    
-    for(int i = 0; i < test1.mesh.getVertices().size();i++){
-        test1.mesh.setVertex(i, test1.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-    }
-    
-    
-    frames.push_back( test1 );
-    
-
-    
-    
-    frame test3;
-    test3.frameType = 2;
-    test3.totalTime = 500;
-    //    test3.renderMesh = true;
-    
-    test3.mesh = read.readMesh("meshes/contextDecimated0.5.ply");
-    
-    for(int i = 0; i < test3.mesh.getVertices().size();i++){
-        test3.mesh.setVertex(i, test3.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-    }
-    
-    
-    frames.push_back( test3 );
-    
-    
-    frame test2;
-    test2.frameType = 1;
-    test2.totalTime = 2000;
-    frames.push_back( test2 );
-
-    frame test4;
-    test4.frameType = 2;
-    test4.totalTime = 20000;
-    
-    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
-    test4.mesh = read.readMesh("meshes/LungeLeftWallDecimated0.5.ply");
-    
-    for(int i = 0; i < test4.mesh.getVertices().size();i++){
-        test4.mesh.setVertex(i, test4.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-    }
-    
-    
-    frames.push_back( test4 );
-
-
-    
- 
-    
-    
-    
-
-//    Then write some proper "sort" algorithms that would take the frames and push into deque of pointers
-    for(int i = 0; i < frames.size(); i++){
-        sequence.push_back(&frames[i]);
-    }
+//
+//
+//    frames.push_back( test5 );
+//
+//
+//
+//        frame one;
+//        one.frameType = 1;
+//        one.totalTime = 10000;
+//        frames.push_back( one );
+//
+//    frame test1;
+//    test1.frameType = 2;
+//    test1.totalTime = 600;
+//
+//    test1.mesh = read.readMesh("meshes/jug6857.ply");
+//
+//
+//    for(int i = 0; i < test1.mesh.getVertices().size();i++){
+//        test1.mesh.setVertex(i, test1.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+//    }
+//
+//
+//    frames.push_back( test1 );
+//
+//
+//
+//
+//    frame test3;
+//    test3.frameType = 2;
+//    test3.totalTime = 500;
+//    //    test3.renderMesh = true;
+//
+//    test3.mesh = read.readMesh("meshes/contextDecimated0.5.ply");
+//
+//    for(int i = 0; i < test3.mesh.getVertices().size();i++){
+//        test3.mesh.setVertex(i, test3.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+//    }
+//
+//
+//    frames.push_back( test3 );
+//
+//
+//    frame test2;
+//    test2.frameType = 1;
+//    test2.totalTime = 2000;
+//    frames.push_back( test2 );
+//
+//    frame test4;
+//    test4.frameType = 2;
+//    test4.totalTime = 20000;
+//
+//    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
+//    test4.mesh = read.readMesh("meshes/LungeLeftWallDecimated0.5.ply");
+//
+//    for(int i = 0; i < test4.mesh.getVertices().size();i++){
+//        test4.mesh.setVertex(i, test4.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+//    }
+//
+//
+//    frames.push_back( test4 );
+//
+//
+//
+//
+//
+//
+//
+//
+////    Then write some proper "sort" algorithms that would take the frames and push into deque of pointers
+//    for(int i = 0; i < frames.size(); i++){
+//        sequence.push_back(&frames[i]);
+//    }
     
     timeStep = 100;
     isMousePressed = false;
@@ -196,7 +192,7 @@ void Control::update(){
                     //                particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
 
 
-//                    cur.addDampingForce();
+//                  cur.addDampingForce();
                     cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
                 }
                 
@@ -319,10 +315,14 @@ void Control::loadFrame(){
             //Boolean to draw full mesh in addition to particle sys version
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
-            if(sequence.back()->mesh.getVertices().size() > 0 ){ //&& sequence.back()->particles.size() == 0
-                
-                currentFrame.mesh = sequence.back()->mesh;
-                
+//            if(sequence.back()->mesh.getVertices().size() > 0 ){ //&& sequence.back()->particles.size() == 0
+            
+                currentFrame.mesh = read.readMesh("meshes/"+sequence.back()->externalFileName);
+            
+                for(int i = 0; i < currentFrame.mesh.getVertices().size();i++){
+                    currentFrame.mesh.setVertex(i, currentFrame.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
+                }
+            
                 
                 vector<BinnedParticle> tempVec = particleSystem.getParticles();;
                 for(int i = 0; i < tempVec.size(); i++ ){
@@ -362,7 +362,7 @@ void Control::loadFrame(){
                     
                 }
                 
-            }
+//            }
             
             //find best wat to do this but for now ok.
             

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BinnedParticle.h"
+#include "history.h"
 
 struct frame {
     
@@ -14,26 +15,42 @@ struct frame {
         leader = l;
     }
     
-    string uID;
+
+    //larger meta collection and authoring data
+    string collection;
+    string collectionDesc;
+    int encounterDate;
+    float encounterLocLong;
+    float encounterLocLat;
+    string author;
+    string citation;
+    
+    //frame data
     int frameType;
+    string title;
+    string desc;
+    string material;
+    string externalFileName;
+    int totalTime;
+    vector< history > historyVec;
+    
+    
+    //programmatic stuff
+    string uID;
     bool animating;
     bool renderMesh;
-    int totalTime;
     
-    //Might not use these
     vector< ofVec3f > points; //default constructed to be empty
     vector< ofColor > pointColors;
     
     vector< ofVec3f > pointsB; //default constructed to be empty
     vector< ofColor > pointColorsB;
     
-    
     ofMesh mesh;
     
-    int leader;
+    int leader; //Maybe make this an array?
     int newActiveP;
     
     vector< BinnedParticle > particles;
-
 
 };
