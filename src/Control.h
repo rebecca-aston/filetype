@@ -14,6 +14,7 @@
 #include "Write.h"
 #include "BinnedParticleSystem.h"
 #include "ofxAssimpModelLoader.h"
+#include "DataScreen.h"
 
 
 class Control {
@@ -37,7 +38,6 @@ protected:
     deque < frame* > sequence;
     
     frame currentFrame;
-    frame * latestFrame;
     
     Read read;
     Write write;
@@ -45,11 +45,15 @@ protected:
 public:
     Control();
     
+    DataScreen dataScreen;
+    
     void setup();
     void draw();
     void update();
     void loadFrame();
-    void drawStats();
+    
+    void setupDataScreen();
+    void drawDataScreen();
     
     void exportPLY();
     

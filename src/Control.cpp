@@ -15,6 +15,7 @@ void Control::setup(){
     
     read.readModel();
     
+    //Just initialize the sequence to the first few
     for(int i = 0; i < read.frameVec.size(); i++){
         if(sequence.size() < 10){
             sequence.push_back(&read.frameVec[i]);
@@ -22,7 +23,6 @@ void Control::setup(){
             break;
         }
     }
-    
     
     // this number describes how many bins are used
     // on my machine, 2 is the ideal number (2^2 = 4x4 pixel bins)
@@ -38,91 +38,6 @@ void Control::setup(){
     
     kBinnedParticles = 50000;//25000 is enough to do all triangles
     backBurnerSystem.setup(cubeResolution*1.5, cubeResolution*1.5, binPower);
-    
-
-//    frame test5;
-//    test5.frameType = 2;
-//    test5.totalTime = 20000;
-//
-//    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
-//    test5.mesh = read.readMesh("meshes/LoungeCouch.ply");
-//
-//    for(int i = 0; i < test5.mesh.getVertices().size();i++){
-//        test5.mesh.setVertex(i, test5.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-//    }
-//
-//
-//    frames.push_back( test5 );
-//
-//
-//
-//        frame one;
-//        one.frameType = 1;
-//        one.totalTime = 10000;
-//        frames.push_back( one );
-//
-//    frame test1;
-//    test1.frameType = 2;
-//    test1.totalTime = 600;
-//
-//    test1.mesh = read.readMesh("meshes/jug6857.ply");
-//
-//
-//    for(int i = 0; i < test1.mesh.getVertices().size();i++){
-//        test1.mesh.setVertex(i, test1.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-//    }
-//
-//
-//    frames.push_back( test1 );
-//
-//
-//
-//
-//    frame test3;
-//    test3.frameType = 2;
-//    test3.totalTime = 500;
-//    //    test3.renderMesh = true;
-//
-//    test3.mesh = read.readMesh("meshes/contextDecimated0.5.ply");
-//
-//    for(int i = 0; i < test3.mesh.getVertices().size();i++){
-//        test3.mesh.setVertex(i, test3.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-//    }
-//
-//
-//    frames.push_back( test3 );
-//
-//
-//    frame test2;
-//    test2.frameType = 1;
-//    test2.totalTime = 2000;
-//    frames.push_back( test2 );
-//
-//    frame test4;
-//    test4.frameType = 2;
-//    test4.totalTime = 20000;
-//
-//    //    test1.mesh = plyR.read("jug6857.ply", kBinnedParticles);
-//    test4.mesh = read.readMesh("meshes/LungeLeftWallDecimated0.5.ply");
-//
-//    for(int i = 0; i < test4.mesh.getVertices().size();i++){
-//        test4.mesh.setVertex(i, test4.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-//    }
-//
-//
-//    frames.push_back( test4 );
-//
-//
-//
-//
-//
-//
-//
-//
-////    Then write some proper "sort" algorithms that would take the frames and push into deque of pointers
-//    for(int i = 0; i < frames.size(); i++){
-//        sequence.push_back(&frames[i]);
-//    }
     
     timeStep = 100;
     isMousePressed = false;
@@ -294,10 +209,27 @@ void Control::draw(){
 }
 
 
+//Storing the latest data in a "current Frame" so that there is an additive effect,
+//old data stays on Data Screen
+//Also images/meshes are not saved in memory but re-loaded when needed
 void Control::loadFrame(){
     
+    //Assume all frames will have this basic data
     currentFrame.frameType = sequence.back()->frameType;
     currentFrame.totalTime = sequence.back()->totalTime;
+    
+    currentFrame.collection = sequence.back()->collection;
+    currentFrame.collectionDesc = sequence.back()->collectionDesc;
+//    int encounterDate;
+//    float encounterLocLong;
+//    float encounterLocLat;
+    currentFrame.author = sequence.back()->author;
+    currentFrame.citation = sequence.back()->citation;
+    
+    currentFrame.title = sequence.back()->title;
+    currentFrame.desc = sequence.back()->desc;
+    currentFrame.material = sequence.back()->material;
+    currentFrame.historyVec = sequence.back()->historyVec;
     
     switch(currentFrame.frameType){
         case 1 : { // Flocking
@@ -425,12 +357,23 @@ void Control::loadFrame(){
             
     }
     
+    
+    dataScreen.loadData(currentFrame);
+    
 }
 
 
 //Add in more secondScreen data draw functions here
 
-void Control::drawStats(){
+void Control::setupDataScreen(){
+    dataScreen.setup();
+    
+}
+
+void Control::drawDataScreen(){
+    
+    dataScreen.draw();
+    
     ofSetColor(255);
     ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", 32, 32);
     ofDrawBitmapString(ofToString(backBurnerSystem.size()) + " backburner particles", 32, 52);

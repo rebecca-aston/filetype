@@ -6,13 +6,16 @@ void ofApp::setup(){
     
     control.setup();
     
-    
     glShadeModel(GL_FLAT);
     light.setAreaLight(20, 20);
     light.setPosition(0, -1000, 0);
     
 }
 void ofApp::setupSecondScreen(){
+    
+    //If need to add gui params they should be available
+    control.setupDataScreen();
+    
     //GUI
     gui.setup();
     
@@ -29,6 +32,7 @@ void ofApp::setupSecondScreen(){
     //Buttons declared in ofApp.h
     gui.add(exportMeshButton.setup("Export Mesh"));
 
+    
 }
 
 
@@ -75,7 +79,7 @@ void ofApp::drawSecondScreen(ofEventArgs & args){
     ofSetColor(255);
     gui.draw();
     
-    control.drawStats();
+    control.drawDataScreen();
 }
 
 //--------------------------------------------------------------
