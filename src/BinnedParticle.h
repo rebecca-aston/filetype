@@ -8,7 +8,8 @@ public:
 	void updatePosition(float timeStep);
 	void resetForce();
 	void bounceOffWalls(float left, float top, float right, float bottom, float damping = .3);// just make resolution?
-    void waveFloor(float left, float top, float right, float bottom, float damping = .3);
+    void bounceOffFloor(float floor, float damping = .3);
+    void swirl();
 	void addDampingForce(float damping = .01);
     void align(float _xv, float _yv, float _zv);
     void setTarget(float x, float y, float z);

@@ -137,7 +137,7 @@ void Control::update(){
                     
                     particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
                 
-                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
+//                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
                     cur.addDampingForce();
                 }
 
@@ -185,8 +185,11 @@ void Control::update(){
 //            cout << backBurnerSystem[i].life << endl;
             backBurnerSystem.removeAtIndex(i);
         }
-        cur.waveFloor(0, 0, backBurnerSystem.getWidth(), backBurnerSystem.getHeight()); // needs work
+        cur.swirl();
+        cur.bounceOffFloor(0);
     }
+    
+    backBurnerSystem.addAttractionForce(cubeResolution/2, cubeResolution/2, 100, 2000, .02);
     
     
     //ACTIVE

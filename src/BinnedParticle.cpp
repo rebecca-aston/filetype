@@ -88,46 +88,16 @@ void BinnedParticle::bounceOffWalls(float left, float top, float right, float bo
 	}
 }
 
-void BinnedParticle::waveFloor(float left, float top, float right, float bottom, float damping) {
+void BinnedParticle::bounceOffFloor(float floor, float damping) {
     bool collision = false;
-    
-    if (x > right){
-        x = right;//-10;
-        xv *= -1;
-        collision = true;
-    } else if (x < left){
-        x = left;//+10;
-        xv *= -1;
-        collision = true;
-    }
-    
-    if (y > bottom){
-        y = bottom;//-10;
-        yv *= -1;
-        collision = true;
-    } else if (y < top){
-        y = top;//+10;
-        yv *= -1;
-        collision = true;
-    }
-    
+
     //Change to depth??
-    if (z > bottom){
-        z = bottom;//-10;
-        zv *= -1;
-        
-        
-        
-        collision = true;
-        
-        //less / greater than position in x along noise
-        
-        
-        
-    } else if (z < (top+ofNoise(x*ofGetFrameNum()*01)*400)){
-//                z = (top+ofNoise(x*ofGetFrameNum()*01)*400);//+10;
+    if (z < floor){
+        z = floor;//-10;
         zv *= -1.5;
+        
         collision = true;
+        
     }
     
     if (collision == true){
@@ -135,6 +105,10 @@ void BinnedParticle::waveFloor(float left, float top, float right, float bottom,
         yv *= damping;
         zv *= damping;
     }
+}
+
+void BinnedParticle::swirl() {
+    xv += 0.001 * cos (TWO_PI * ofNoise(1.5 * x, 1.5 * y, 0.01 * z));
 }
 
 void BinnedParticle::addDampingForce(float damping) {
