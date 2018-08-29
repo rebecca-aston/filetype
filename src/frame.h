@@ -47,8 +47,9 @@ struct frame {
     vector< ofColor > pointColorsB;
     
     ofMesh mesh;
+    ofImage image;
     
-    int leader; //Maybe make this an array?
+    int leader; //Flocking
     int newActiveP;
     
     vector< BinnedParticle > particles;

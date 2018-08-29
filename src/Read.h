@@ -15,10 +15,11 @@ public:
     ofMesh readMesh(string path);
 //    ofSound readSound(string path);
     string readText(string path);
+    ofImage readImage(string path);
     
     ofDirectory modelData;
     vector< frame > frameVec;
-    bool dev = false;
+    bool dev = true;
     
 };
 

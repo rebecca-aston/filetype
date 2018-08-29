@@ -15,7 +15,7 @@
 #include "BinnedParticleSystem.h"
 #include "ofxAssimpModelLoader.h"
 #include "DataScreen.h"
-
+#include "DelaunayImage.h"
 
 class Control {
 protected:
@@ -44,8 +44,15 @@ protected:
     
     frame flock;
     
+   
 public:
     Control();
+    
+    DelaunayImage del;
+    
+    ofVec3f camPos;
+    ofVec3f camLook;
+    int randParticle;
     
     DataScreen dataScreen;
     
@@ -53,6 +60,7 @@ public:
     void draw();
     void update();
     void loadFrame();
+    void addMeshToParticleSys();
     
     void setupDataScreen();
     void drawDataScreen();

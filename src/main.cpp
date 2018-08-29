@@ -22,8 +22,8 @@ int main( ){
     settings.height = 1024;
     settings.setPosition(ofVec2f(0,0));
     settings.resizable = false;
-    // uncomment next line to share main's OpenGL resources with gui
-    //settings.shareContextWith = mainWindow;
+   
+    settings.shareContextWith = mainWindow;
     shared_ptr<ofAppBaseWindow> guiWindow = ofCreateWindow(settings);
     guiWindow->setVerticalSync(false);
     

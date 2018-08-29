@@ -26,6 +26,7 @@ void Control::setup(){
             sequence.push_back(&flock);
             sequence.push_back(&read.frameVec[i]);
             
+            cout << read.frameVec[i].frameType << endl;
         }else{
             break;
         }
@@ -59,6 +60,7 @@ void Control::setup(){
 }
 
 void Control::update(){
+
     
     //Check animation timing to see if should load in new frame
     //Then loadFrame()
@@ -104,6 +106,9 @@ void Control::update(){
             case 1 : { // Flocking
 
                 
+
+                camLook = ofVec3f(particleSystem[currentFrame.leader].x,particleSystem[currentFrame.leader].y,particleSystem[currentFrame.leader].z);
+
                 
                 for(int i = 0; i < particleSystem.size(); i++) {
                     BinnedParticle& cur = particleSystem[i];
@@ -135,12 +140,14 @@ void Control::update(){
 
                 }
 
-                cout << currentFrame.leader << endl;
-                particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
+             //this is causing bugs
+//                particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
                 
                 break;
             }
             case 2 : { // Mesh and Colors in active particle sys
+                
+               camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
                 for(int i = 0; i < particleSystem.size(); i++) {
                     BinnedParticle& cur = particleSystem[i];
@@ -244,6 +251,7 @@ void Control::loadFrame(){
     currentFrame.material = sequence.back()->material;
     currentFrame.historyVec = sequence.back()->historyVec;
     
+    
     switch(currentFrame.frameType){
         case 1 : { // Flocking
             
@@ -253,7 +261,6 @@ void Control::loadFrame(){
                 sequence.pop_back();
                 loadFrame();
             }else if(currentFrame.leader == -1){
-                cout << "HERE" <<endl;
                 currentFrame.leader = ofRandom(0,particleSystem.size());
             }
             
@@ -264,52 +271,28 @@ void Control::loadFrame(){
             //Boolean to draw full mesh in addition to particle sys version
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
+           
+//            ofVec3f totalPos;
+            
+//            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
+//                totalPos += currentFrame.mesh.getVertex(i)+ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2);
+//            }
+            
+//            camLook = totalPos/currentFrame.mesh.getVertices().size();
+            
+            
+            
 //            if(sequence.back()->mesh.getVertices().size() > 0 ){ //&& sequence.back()->particles.size() == 0
             
                 currentFrame.mesh = read.readMesh("meshes/"+sequence.back()->externalFileName);
             
-                for(int i = 0; i < currentFrame.mesh.getVertices().size();i++){
-                    currentFrame.mesh.setVertex(i, currentFrame.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution*.8,cubeResolution/2));
-                }
             
-                
-                vector<BinnedParticle> tempVec = particleSystem.getParticles();;
-                for(int i = 0; i < tempVec.size(); i++ ){
-                    backBurnerSystem.add(tempVec[i]);
-                }
-                
-                particleSystem.clear();
-                
-                
-                for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i+=3){
-                    
-                    
-                    //Rather than having random positioning
-                    //get a previous particle position that is being loaded out of the system and if
-                    //size() is large add random.
-                    
-                    float x = ofRandom(0, cubeResolution) ;
-                    float y = ofRandom(0, cubeResolution) ;
-                    float z = ofRandom(0, cubeResolution) ;
-                    BinnedParticle particle(x, y, z, 0, 0, 0);
-                    
-                    ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
-                    
-                    particle.setTarget(t.x,t.y,t.z);
-                    
-                    ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
-                    ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
-                    
-                    particle.p1 = diff1;
-                    particle.p2 = diff2;
-                    
-                    particle.targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
-                    particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
-                    particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
-                    
-                    particleSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
-                    
-                }
+            
+            
+                randParticle = ofRandom(particleSystem.size());
+            
+            
+                addMeshToParticleSys();
                 
 //            }
             
@@ -362,6 +345,28 @@ void Control::loadFrame(){
             currentFrame.mesh = sequence.back()->mesh;
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
+             camPos = ofVec3f(1,0,0);
+            
+            break;
+        }
+        case 4 : { // Image
+            
+            //****
+
+             camPos = ofVec3f(0,1,0);
+            
+            currentFrame.image = read.readImage("images/"+sequence.back()->externalFileName);
+            
+            camLook = ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2);
+            
+            currentFrame.mesh = del.triangulateImage(currentFrame.image);
+            
+            addMeshToParticleSys();
+            
+            cout << currentFrame.image.isAllocated() << endl;
+            
+            
+            
             break;
         }
         default : {
@@ -376,6 +381,56 @@ void Control::loadFrame(){
     
     
     dataScreen.loadData(currentFrame);
+    
+}
+
+
+void Control::addMeshToParticleSys(){
+    
+    for(int i = 0; i < currentFrame.mesh.getVertices().size();i++){
+        currentFrame.mesh.setVertex(i, currentFrame.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2));
+    }
+    
+    
+    vector<BinnedParticle> tempVec = particleSystem.getParticles();;
+    for(int i = 0; i < tempVec.size(); i++ ){
+        backBurnerSystem.add(tempVec[i]);
+    }
+    
+    particleSystem.clear();
+    
+    
+    for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i+=3){
+        
+        
+        //Rather than having random positioning
+        //get a previous particle position that is being loaded out of the system and if
+        //size() is large add random.
+        
+        float x = ofRandom(0, cubeResolution) ;
+        float y = ofRandom(0, cubeResolution) ;
+        float z = ofRandom(0, cubeResolution) ;
+        BinnedParticle particle(x, y, z, 0, 0, 0);
+        
+        ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
+        
+//        BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
+        
+        particle.setTarget(t.x,t.y,t.z);
+        
+        ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
+        ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
+        
+        particle.p1 = diff1;
+        particle.p2 = diff2;
+        
+        particle.targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
+        particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
+        particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
+        
+        particleSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
+        
+    }
     
 }
 
@@ -405,7 +460,7 @@ void Control::exportPLY(){
     //move into JsonRW / equivalent name eventually
     
     for(int i = 0; i < particleSystem.size(); i++){
-        if(particleSystem[i].x > (cubeResolution/2)+50){
+        if(particleSystem[i].x < (cubeResolution/2)-120){
             ofVec3f p = ofVec3f(particleSystem[i].x,particleSystem[i].y,particleSystem[i].z);
             ofVec3f p1 = ofVec3f(p.x + particleSystem[i].p1.x, p.y + particleSystem[i].p1.y, p.z + particleSystem[i].p1.z);
             ofVec3f p2 = ofVec3f(p.x + particleSystem[i].p2.x, p.y + particleSystem[i].p2.y, p.z + particleSystem[i].p2.z);

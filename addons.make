@@ -1,3 +1,5 @@
 ofxAssimpModelLoader
+ofxDelaunay
 ofxGui
 ofxJSON
+ofxOpenCv

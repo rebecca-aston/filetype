@@ -76,6 +76,10 @@ vector< frame > Read::readJson(string path){
                 temp.frameType = 2;
             }
             
+            if(json["frames"][i]["frame-type"].asString() == "image"){
+                temp.frameType = 4;
+            }
+            
             if(dev)cout << json["frames"][i]["title"].asString() << endl;
             temp.title = json["frames"][i]["title"].asString();
             
@@ -122,6 +126,7 @@ vector< frame > Read::readJson(string path){
                 temp.historyVec.push_back(histEntry);
             }
             
+            cout << temp.frameType << endl;
             vec.push_back(temp);
         }
         
@@ -152,5 +157,12 @@ string Read::readText(string path){
     return txt;
 }
 
+ofImage Read::readImage(string path){
+    ofImage img;
+    
+    img.load(path);
+    
+    return img;
+}
 
 

@@ -16,7 +16,16 @@ void DataScreen::setup(){
 }
 
 void DataScreen::draw(){
+    ofBackground(0);
     if(font.isLoaded()){
+        
+        if(currentFrame.image.isAllocated()){
+            ofPushMatrix();
+            ofScale(.5, .5);
+            currentFrame.image.draw(0,0);
+            ofPopMatrix();
+        }
+        
         
         int centerScreen = ofGetWidth()/2;
         int newLine = ofGetHeight()/2;

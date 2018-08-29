@@ -31,6 +31,7 @@ class ofApp : public ofBaseApp{
         ofxToggle toggle_axis;
         ofxToggle toggle_grid;
         ofxToggle pause;
+        ofxToggle presentationMode;
     
     
         //Buttons
