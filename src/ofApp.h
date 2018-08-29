@@ -47,4 +47,6 @@ class ofApp : public ofBaseApp{
 
         Control control;
     
+        float displayCamRotation;
+    
 };

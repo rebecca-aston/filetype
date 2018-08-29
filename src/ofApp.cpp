@@ -53,25 +53,25 @@ void ofApp::draw(){
     if(presentationMode){
         
         //Get it to always look at the center or maybe at leader or random particle
-        cam.lookAt(control.camLook,control.camPos);
+        cam.lookAt(control.camLook,ofVec3f(0,0,1));
         
         
         
 //        instead of lerping to set CatPosition
 //        Get it to continually rotate around the camlook position
         
-//        float orbitRadius = map(sin(frameCount*0.001),-1,1,400,900);
-//        float ypos= sin(radians(displayCamRotation))*orbitRadius;
-//        float xpos= cos(radians(displayCamRotation))*orbitRadius;
-//        float zpos= sin(radians(displayCamRotation))*orbitRadius;
-//        
-//        camera(xpos, ypos, zpos, 0, 0, 0, 0, -1, 0);
-//        
-//        if(displayCamRotation > 360){
-//            displayCamRotation = 0;
-//        }else{
-//            displayCamRotation += 0.1;
-//        }
+        float orbitRadius = ofMap(sin(ofGetFrameNum()*0.001),-1,1,400,900);
+        float ypos= sin(ofDegToRad(displayCamRotation))*orbitRadius;
+        float xpos= cos(ofDegToRad(displayCamRotation))*orbitRadius;
+//        float zpos= sin(DEG_TO_RAD((displayCamRotation))*orbitRadius;
+//
+        cam.setGlobalPosition(xpos,ypos, 400);
+//
+        if(displayCamRotation > 360){
+            displayCamRotation = 0;
+        }else{
+            displayCamRotation += 0.1;
+        }
         
         
 //        ofVec3f pos = cam.getGlobalPosition();

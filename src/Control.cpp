@@ -122,12 +122,13 @@ void Control::update(){
 
 
 //                  cur.addDampingForce();
-                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
+//                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
+                    cur.bounceOffFloor(0);
                 }
 
                 //Only apply flocking to a random selection of particles
                 //Maybe a better way to do it, but keeps things lighter on the system while preserving some nice behavior
-                for(int i = MAX(0,currentFrame.leader - 10); i < MIN(particleSystem.size(),currentFrame.leader + 10); i++){
+                for(int i = MAX(0,currentFrame.leader - 50); i < MIN(particleSystem.size(),currentFrame.leader + 50); i++){
                     BinnedParticle& cur = particleSystem[i];
                     vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
 
@@ -147,7 +148,7 @@ void Control::update(){
             }
             case 2 : { // Mesh and Colors in active particle sys
                 
-               camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
+//               camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
                 for(int i = 0; i < particleSystem.size(); i++) {
                     BinnedParticle& cur = particleSystem[i];
@@ -202,11 +203,11 @@ void Control::update(){
 //            cout << backBurnerSystem[i].life << endl;
             backBurnerSystem.removeAtIndex(i);
         }
-        cur.swirl();
+//        cur.swirl();
         cur.bounceOffFloor(0);
     }
     
-    backBurnerSystem.addAttractionForce(cubeResolution/2, cubeResolution/2, 100, 2000, .02);
+//    backBurnerSystem.addAttractionForce(cubeResolution/2, cubeResolution/2, 100, 2000, .02);
     
     
     //ACTIVE
@@ -260,7 +261,7 @@ void Control::loadFrame(){
                 //Add in a function that removes end and adds new from data
                 sequence.pop_back();
                 loadFrame();
-            }else if(currentFrame.leader == -1){
+            }else { //if(currentFrame.leader == -1)
                 currentFrame.leader = ofRandom(0,particleSystem.size());
             }
             
@@ -272,14 +273,18 @@ void Control::loadFrame(){
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
            
-//            ofVec3f totalPos;
+            ofVec3f totalPos;
             
-//            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
-//                totalPos += currentFrame.mesh.getVertex(i)+ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2);
-//            }
+            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
+                totalPos += currentFrame.mesh.getVertex(i);
+            }
             
-//            camLook = totalPos/currentFrame.mesh.getVertices().size();
+            camLook = totalPos/currentFrame.mesh.getVertices().size();
             
+            
+            //I think randomParticle is better, just need to debug.
+            
+            //                randParticle = ofRandom(particleSystem.size());
             
             
 //            if(sequence.back()->mesh.getVertices().size() > 0 ){ //&& sequence.back()->particles.size() == 0
@@ -289,7 +294,7 @@ void Control::loadFrame(){
             
             
             
-                randParticle = ofRandom(particleSystem.size());
+
             
             
                 addMeshToParticleSys();
@@ -407,14 +412,14 @@ void Control::addMeshToParticleSys(){
         //get a previous particle position that is being loaded out of the system and if
         //size() is large add random.
         
-        float x = ofRandom(0, cubeResolution) ;
-        float y = ofRandom(0, cubeResolution) ;
-        float z = ofRandom(0, cubeResolution) ;
-        BinnedParticle particle(x, y, z, 0, 0, 0);
+//        float x = ofRandom(0, cubeResolution) ;
+//        float y = ofRandom(0, cubeResolution) ;
+//        float z = ofRandom(0, cubeResolution) ;
+//        BinnedParticle particle(x, y, z, 0, 0, 0);
         
         ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
         
-//        BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
+        BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
         
         particle.setTarget(t.x,t.y,t.z);
         

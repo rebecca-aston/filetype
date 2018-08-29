@@ -9,7 +9,10 @@ ofMesh DelaunayImage::triangulateImage(ofImage img){
     
         ofMesh temp;
     
+        img.mirror(true, false);
+    
         image.setFromPixels( img.getPixels() );
+    
     
 
 		//Convert to grayscale image
@@ -51,19 +54,19 @@ ofMesh DelaunayImage::triangulateImage(ofImage img){
             
             
 //            Take out the black i.e. if black don't add
-
-            
             if(image.getPixels().getColor(centroid.x,centroid.y).r != 0 && image.getPixels().getColor(centroid.x,centroid.y).g != 0 && image.getPixels().getColor(centroid.x,centroid.y).b != 0){
                 
-                temp.addVertex(ofVec3f(pts[0].x,pts[0].y,ofRandom(0,50)));
+                int randY = ofRandom(0,50);
+                
+                temp.addVertex(ofVec3f(pts[0].x,randY,pts[0].y));
                 temp.addColor(image.getPixels().getColor(centroid.x,centroid.y));
                 temp.addIndex(i*3);
                 
-                temp.addVertex(ofVec3f(pts[1].x,pts[1].y,ofRandom(0,50)));
+                temp.addVertex(ofVec3f(pts[1].x,randY,pts[1].y));
                 temp.addColor(image.getPixels().getColor(centroid.x,centroid.y));
                 temp.addIndex(i*3+1);
                 
-                temp.addVertex(ofVec3f(pts[2].x,pts[2].y,ofRandom(0,50)));
+                temp.addVertex(ofVec3f(pts[2].x,randY,pts[2].y));
                 temp.addColor(image.getPixels().getColor(centroid.x,centroid.y));
                 temp.addIndex(i*3+2);
                 
