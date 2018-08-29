@@ -42,6 +42,8 @@ protected:
     Read read;
     Write write;
     
+    frame flock;
+    
 public:
     Control();
     

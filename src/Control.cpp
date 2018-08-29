@@ -13,12 +13,19 @@ Control::Control(){
 
 void Control::setup(){
     
+    
+    flock.frameType = 1;
+    flock.totalTime = 10000;
+    
     read.readModel();
     
     //Just initialize the sequence to the first few
     for(int i = 0; i < read.frameVec.size(); i++){
         if(sequence.size() < 10){
+            
+            sequence.push_back(&flock);
             sequence.push_back(&read.frameVec[i]);
+            
         }else{
             break;
         }
@@ -96,6 +103,8 @@ void Control::update(){
         switch(currentFrame.frameType){
             case 1 : { // Flocking
 
+                
+                
                 for(int i = 0; i < particleSystem.size(); i++) {
                     BinnedParticle& cur = particleSystem[i];
                     //                vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
@@ -110,22 +119,23 @@ void Control::update(){
 //                  cur.addDampingForce();
                     cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
                 }
-                
+
                 //Only apply flocking to a random selection of particles
                 //Maybe a better way to do it, but keeps things lighter on the system while preserving some nice behavior
                 for(int i = MAX(0,currentFrame.leader - 10); i < MIN(particleSystem.size(),currentFrame.leader + 10); i++){
                     BinnedParticle& cur = particleSystem[i];
                     vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
-                    
+
                     for(int i = 0; i < neighbors.size(); i++){
                         cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
                     }
-                    
+
                     particleSystem.addRepulsionForce(cur, 70, .1);
                     particleSystem.addAttractionForce(cur, 50, .3);
- 
+
                 }
-                
+
+                cout << currentFrame.leader << endl;
                 particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
                 
                 break;
@@ -237,10 +247,14 @@ void Control::loadFrame(){
     switch(currentFrame.frameType){
         case 1 : { // Flocking
             
-            if(sequence.back()->leader != -1){
-                currentFrame.leader = sequence.back()->leader;
-            }else{
-                currentFrame.leader = ofRandom(0,sequence.back()->particles.size());
+            if(particleSystem.size() == 0){
+                
+                //Add in a function that removes end and adds new from data
+                sequence.pop_back();
+                loadFrame();
+            }else if(currentFrame.leader == -1){
+                cout << "HERE" <<endl;
+                currentFrame.leader = ofRandom(0,particleSystem.size());
             }
             
             break;
@@ -354,7 +368,7 @@ void Control::loadFrame(){
             //error handling if an incomplete json file ends up in data
             cout << "Unrecognized Frame Type" << endl;
             //Dispose of frame and continue with deque in next call to update
-            frames.pop_back();
+            sequence.pop_back();
             break;
         }
             
@@ -391,6 +405,7 @@ void Control::exportPLY(){
     //move into JsonRW / equivalent name eventually
     
     for(int i = 0; i < particleSystem.size(); i++){
+        if(particleSystem[i].x > (cubeResolution/2)+50){
             ofVec3f p = ofVec3f(particleSystem[i].x,particleSystem[i].y,particleSystem[i].z);
             ofVec3f p1 = ofVec3f(p.x + particleSystem[i].p1.x, p.y + particleSystem[i].p1.y, p.z + particleSystem[i].p1.z);
             ofVec3f p2 = ofVec3f(p.x + particleSystem[i].p2.x, p.y + particleSystem[i].p2.y, p.z + particleSystem[i].p2.z);
@@ -402,21 +417,39 @@ void Control::exportPLY(){
                 temp.pointColors.push_back(particleSystem[i].p1Color);
                 temp.pointColors.push_back(particleSystem[i].p2Color);
             }
+        }
+  
     }
     
-    for(int i = 0; i < backBurnerSystem.size(); i++){
-            ofVec3f p = ofVec3f(backBurnerSystem[i].x,backBurnerSystem[i].y,backBurnerSystem[i].z);
-            ofVec3f p1 = ofVec3f(p.x + backBurnerSystem[i].p1.x, p.y + backBurnerSystem[i].p1.y, p.z + backBurnerSystem[i].p1.z);
-            ofVec3f p2 = ofVec3f(p.x + backBurnerSystem[i].p2.x, p.y + backBurnerSystem[i].p2.y, p.z + backBurnerSystem[i].p2.z);
-            if(p.distance(p1) < 30 && p.distance(p2) < 30){
-                temp.pointsB.push_back(p);
-                temp.pointsB.push_back(p1);
-                temp.pointsB.push_back(p2);
-                temp.pointColorsB.push_back(backBurnerSystem[i].targetColor);
-                temp.pointColorsB.push_back(backBurnerSystem[i].p1Color);
-                temp.pointColorsB.push_back(backBurnerSystem[i].p2Color);
-            }
-    }
+//    for(int i = 0; i < particleSystem.size(); i++){
+//        ofVec3f p = ofVec3f(particleSystem[i].x,particleSystem[i].y,particleSystem[i].z);
+//        ofVec3f p1 = ofVec3f(p.x + particleSystem[i].p1.x, p.y + particleSystem[i].p1.y, p.z + particleSystem[i].p1.z);
+//        ofVec3f p2 = ofVec3f(p.x + particleSystem[i].p2.x, p.y + particleSystem[i].p2.y, p.z + particleSystem[i].p2.z);
+//        if(p.distance(p1) < 30 && p.distance(p2) < 30){
+//            temp.points.push_back(p);
+//            temp.points.push_back(p1);
+//            temp.points.push_back(p2);
+//            temp.pointColors.push_back(particleSystem[i].targetColor);
+//            temp.pointColors.push_back(particleSystem[i].p1Color);
+//            temp.pointColors.push_back(particleSystem[i].p2Color);
+//        }
+//    }
+    
+    
+    
+//    for(int i = 0; i < backBurnerSystem.size(); i++){
+//            ofVec3f p = ofVec3f(backBurnerSystem[i].x,backBurnerSystem[i].y,backBurnerSystem[i].z);
+//            ofVec3f p1 = ofVec3f(p.x + backBurnerSystem[i].p1.x, p.y + backBurnerSystem[i].p1.y, p.z + backBurnerSystem[i].p1.z);
+//            ofVec3f p2 = ofVec3f(p.x + backBurnerSystem[i].p2.x, p.y + backBurnerSystem[i].p2.y, p.z + backBurnerSystem[i].p2.z);
+//            if(p.distance(p1) < 30 && p.distance(p2) < 30){
+//                temp.pointsB.push_back(p);
+//                temp.pointsB.push_back(p1);
+//                temp.pointsB.push_back(p2);
+//                temp.pointColorsB.push_back(backBurnerSystem[i].targetColor);
+//                temp.pointColorsB.push_back(backBurnerSystem[i].p1Color);
+//                temp.pointColorsB.push_back(backBurnerSystem[i].p2Color);
+//            }
+//    }
 
     write.writeMesh(temp,"pointCloud_"+ofGetTimestampString());
 }
