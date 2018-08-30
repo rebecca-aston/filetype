@@ -21,7 +21,7 @@ void Control::setup(){
     
     //Just initialize the sequence to the first few
     for(int i = 0; i < read.frameVec.size(); i++){
-        if(sequence.size() < 10){
+        if(sequence.size() < 20){
             
             sequence.push_back(&flock);
             sequence.push_back(&read.frameVec[i]);

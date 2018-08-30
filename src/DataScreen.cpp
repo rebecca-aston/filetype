@@ -21,7 +21,7 @@ void DataScreen::draw(){
         
         if(currentFrame.image.isAllocated()){
             ofPushMatrix();
-            ofScale(.5, .5);
+//            ofScale(.5, .5);
             currentFrame.image.draw(0,0);
             ofPopMatrix();
         }

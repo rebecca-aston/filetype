@@ -46,41 +46,35 @@ ofMesh DelaunayImage::triangulateImage(ofImage img){
         triangulation.triangulate(); // calculate the triangulation!
     
     
+        //Increment so that don't add incorrect indices using i in for loop
+        int numTri = 0;
+    
         for (int i=0; i<triangulation.getNumTriangles(); i++){ // loop over the triangles
             vector <ofPoint> pts = getTriangle(i);             // extract the vector with 3 points
-            ofPoint centroid = ofPoint((pts[0].x+pts[1].x+pts[2].x)/3,(pts[0].y+pts[1].y+pts[2].y)/3);
-            
-            
-            
-            
-//            Take out the black i.e. if black don't add
+            int cX = MAX(0,MIN(image.getWidth(),(pts[0].x+pts[1].x+pts[2].x)/3));
+            int cY = MAX(0,MIN(image.getHeight(),(pts[0].y+pts[1].y+pts[2].y)/3));
+            ofPoint centroid = ofPoint(cX,cY);
+
+//            Remove black
             if(image.getPixels().getColor(centroid.x,centroid.y).r != 0 && image.getPixels().getColor(centroid.x,centroid.y).g != 0 && image.getPixels().getColor(centroid.x,centroid.y).b != 0){
-                
-                int randY = ofRandom(0,50);
-                
+
+                int randY = ofRandom(0,30);
+
                 temp.addVertex(ofVec3f(pts[0].x,randY,pts[0].y));
                 temp.addColor(image.getPixels().getColor(centroid.x,centroid.y));
-                temp.addIndex(i*3);
-                
+                temp.addIndex(numTri*3);
+
                 temp.addVertex(ofVec3f(pts[1].x,randY,pts[1].y));
                 temp.addColor(image.getPixels().getColor(centroid.x,centroid.y));
-                temp.addIndex(i*3+1);
-                
+                temp.addIndex(numTri*3+1);
+
                 temp.addVertex(ofVec3f(pts[2].x,randY,pts[2].y));
                 temp.addColor(image.getPixels().getColor(centroid.x,centroid.y));
-                temp.addIndex(i*3+2);
+                temp.addIndex(numTri*3+2);
                 
+                numTri ++;
             }
-            
-            
- 
-            
-//            if(pts[0].distance(pts[1]) < 130.0 && pts[1].distance(pts[2]) < 130.0 && pts[2].distance(pts[0]) < 130.0){
-//
-//            }else{
-//
-//            }
-            
+
         }
     
     return temp;
