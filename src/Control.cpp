@@ -13,7 +13,7 @@ Control::Control(){
 
 void Control::setup(){
     
-    
+
     flock.frameType = 1;
     flock.totalTime = 10000;
     
@@ -208,6 +208,16 @@ void Control::update(){
     //BACKGROUND
     backBurnerSystem.update(ofGetLastFrameTime());
     
+    
+    //SoundManager
+    
+    //Move all this into the sound manager
+    //pass in the history vector as the argument
+    
+    
+    soundManager.update(&currentFrame);
+    
+
 }
 
 
@@ -257,6 +267,7 @@ void Control::loadFrame(){
     currentFrame.desc = sequence.back()->desc;
     currentFrame.material = sequence.back()->material;
     currentFrame.historyVec = sequence.back()->historyVec;
+    currentFrame.currentHistoryIndex = -1;
     
     
     switch(currentFrame.frameType){
@@ -318,25 +329,32 @@ void Control::loadFrame(){
             break;
         }
         case 5 : { // Text
-            
-//            I think maybe beter
-            
-//            for(int i = 0; i < currentFrame.historyVec.size(); i ++){
-//
-//            }
-            //For every history entry add the text to the sound manager
-            //soundManager.add()
-            
+            //If it's only text based, let the sound keep playing in the background?
+            currentFrame.totalTime = 500;
             break;
         }
         default : {
             //error handling if an incomplete json file ends up in data
             cout << "Unrecognized Frame Type" << endl;
             //Dispose of frame and continue with deque in next call to update
-            sequence.pop_back();
+            shiftFrame();
+            
             break;
         }
             
+    }
+    
+    if(currentFrame.historyVec.size() > 0){
+        for(int i = 0; i < currentFrame.historyVec.size(); i ++){
+            int timeAprox = int(currentFrame.historyVec[i].text.length()*70);
+            
+            cout << timeAprox << endl;
+            
+            currentFrame.historyVec[i].length = timeAprox;
+            
+            //Do this in case the text is very long??
+            currentFrame.totalTime += timeAprox;
+        }
     }
     
     

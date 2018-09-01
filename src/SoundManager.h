@@ -14,13 +14,21 @@
 class SoundManager {
 protected:
     
+    int startTime, readTime;
+    void playSound(string path);
+    void readText(string text);
+    void checkIsReading();
     
+    bool isReading;
+    
+    ofSoundPlayer player;
+    vector<string> soundFiles;
     
 public:
     SoundManager();
     
-    void playSound();
-    void readText(string text);
+    void update(frame * current);
+    
 
 };
 

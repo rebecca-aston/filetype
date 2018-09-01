@@ -6,13 +6,14 @@
 struct frame {
     
     //initialize with values for logic checks later
-    frame(string i = "frame"+ofGetTimestampString(), int f = -1, bool a = false, bool rM = false, int t = -1, int l = -1){
+    frame(string i = "frame"+ofGetTimestampString(), int f = -1, bool a = false, bool rM = false, int t = -1, int l = -1, int hI = -1){
         uID = i;
         frameType = f;
         animating = a;
         renderMesh = rM;
         totalTime = t;
         leader = l;
+        currentHistoryIndex = hI;
     }
     
 
@@ -33,7 +34,7 @@ struct frame {
     string externalFileName;
     int totalTime;
     vector< history > historyVec;
-    
+    int currentHistoryIndex;
     
     //programmatic stuff
     string uID;

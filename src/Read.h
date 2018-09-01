@@ -19,7 +19,7 @@ public:
     
     ofDirectory modelData;
     vector< frame > frameVec;
-    bool dev = true;
+    bool dev;
     
 };
 

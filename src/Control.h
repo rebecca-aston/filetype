@@ -10,6 +10,7 @@
 
 #include "ofMain.h"
 #include "frame.h"
+#include "history.h"
 #include "Read.h"
 #include "Write.h"
 #include "BinnedParticleSystem.h"
@@ -45,6 +46,7 @@ protected:
     
     frame flock;
     
+    SoundManager soundManager;
    
 public:
     Control();

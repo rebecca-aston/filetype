@@ -8,7 +8,7 @@
 #include "Read.h"
 
 Read::Read(){
-    
+    dev = false;
 }
 
 void Read::readModel(){
@@ -117,6 +117,8 @@ vector< frame > Read::readJson(string path){
                 if(dev)cout << json["frames"][i]["history"][j]["citation"].asString() << endl;
                 histEntry.citation = json["frames"][i]["history"][j]["citation"].asString();
                 
+                histEntry.sound = json["frames"][i]["history"][j]["sound"].asString();
+                
                 string text = json["frames"][i]["history"][j]["text"].asString();
                 
                 if(text.find(".txt") != std::string::npos && text.find("txt/") != std::string::npos ){ //check if it's a specific path to a text file
@@ -154,9 +156,8 @@ ofMesh Read::readMesh(string path){
 string Read::readText(string path){
     string txt;
     
-//    test this later
     txt = ofBufferFromFile(path).getText();
-    cout << txt << endl;
+    if(dev) cout << txt << endl;
     
     return txt;
 }
