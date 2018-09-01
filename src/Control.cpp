@@ -83,13 +83,9 @@ void Control::update(){
     }
     
     
-    //Current setup
-    //Main particle system that is the sort of "active" state
-    //The new frame is loading in.
-    //Then there is another "system" which is the scattered accumulation of particles
-    //This is currently mostly a techincal consideration rather than a conceptual one
-    //Have the secondary system only be activated by less computationally expensive actions
-    // maybe re-think the setup?
+    //Main particle system that is the sort of ACTIVE state
+    //which the new frame is loading into.
+    //Then there is another BACKGROUND "system" which is the scattered accumulation of particles
     
     //ACTIVE
     particleSystem.setTimeStep(timeStep);
@@ -105,29 +101,16 @@ void Control::update(){
         switch(currentFrame.frameType){
             case 1 : { // Flocking
 
-                
-
+                //Animate the camera to look at the "leader" particle in the break up of the mesh
                 camLook = ofVec3f(particleSystem[currentFrame.leader].x,particleSystem[currentFrame.leader].y,particleSystem[currentFrame.leader].z);
 
-                
                 for(int i = 0; i < particleSystem.size(); i++) {
                     BinnedParticle& cur = particleSystem[i];
-                    //                vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
-                    //
-                    //                for(int i = 0; i < neighbors.size(); i++){
-                    //                    cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
-                    //                }
-                    //                particleSystem.addRepulsionForce(cur, 300, particleRepulsion);
-                    //                particleSystem.addAttractionForce(cur, particleNeighborhood+30, .3);
-
-
-//                  cur.addDampingForce();
-//                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
-                    cur.bounceOffFloor(0);
+                    
+//                    cur.addDampingForce();
                 }
-
+        
                 //Only apply flocking to a random selection of particles
-                //Maybe a better way to do it, but keeps things lighter on the system while preserving some nice behavior
                 for(int i = MAX(0,currentFrame.leader - 50); i < MIN(particleSystem.size(),currentFrame.leader + 50); i++){
                     BinnedParticle& cur = particleSystem[i];
                     vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
@@ -142,26 +125,29 @@ void Control::update(){
                 }
 
              //this is causing bugs
-//                particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
+                particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
                 
                 break;
             }
             case 2 : { // Mesh and Colors in active particle sys
                 
-//               camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
+               camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
-                for(int i = 0; i < particleSystem.size(); i++) {
-                    BinnedParticle& cur = particleSystem[i];
-                    
-                    particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
-                
-//                    cur.bounceOffWalls(0, 0, particleSystem.getWidth(), particleSystem.getHeight());
-                    cur.addDampingForce();
-                }
+                // Not really using this at the moment
+                //Move to index if not there
+//                for(int i = 0; i < particleSystem.size(); i++) {
+//                    BinnedParticle& cur = particleSystem[i];
+//                    particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
+//                }
 
                 break;
             }
             case 3 : { // Mesh draw
+                
+                break;
+            }
+            case 4 : {
+                 camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
                 break;
             }
@@ -171,6 +157,13 @@ void Control::update(){
         }
     
     
+    //ACTIVE
+    //FOR All states
+    for(int i = 0; i < particleSystem.size(); i++) {
+        BinnedParticle& cur = particleSystem[i];
+ 
+        cur.bounceOffFloor(0);
+    }
     
     //BACKGROUND
     
@@ -180,11 +173,11 @@ void Control::update(){
     //        write better flow field
     //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
     
-    //Definitely add a directional force option... in either just x / y / z... will be lighter on the system....
-    //backBurnerSystem.addAttractionForce(ofRandom(0,cubeResolution), ofRandom(0,cubeResolution), 0, 1000, 0.1);
     
-    //Why is the fading thing not working?? figure out
-    //Fade particles out over time so does not look abrupt
+    
+    //BACKGROUND
+    
+    //FIX FADE!!!
     if(backBurnerSystem.size() > 0 ){//&& ofGetFrameNum()%5 == 0
         int rand = ofRandom(0,backBurnerSystem.size());
 //        int range = MIN(backBurnerSystem.size(), rand+10);
@@ -195,19 +188,19 @@ void Control::update(){
 
     for(int i = 0; i < backBurnerSystem.size(); i++) {
         BinnedParticle& cur = backBurnerSystem[i];
+        
+        //Make particles float down to floor
         if(cur.z > 0) {
             backBurnerSystem.force(cur,cur.x,cur.y,0, 10000, -.01);
         }
         
-        if( backBurnerSystem[i].life <= 0) {// clean up particle system (may be a memory leak somewhere)
-//            cout << backBurnerSystem[i].life << endl;
+        //FADE / more elegant system?
+        if( backBurnerSystem[i].life <= 0) {
             backBurnerSystem.removeAtIndex(i);
         }
-//        cur.swirl();
+
         cur.bounceOffFloor(0);
     }
-    
-//    backBurnerSystem.addAttractionForce(cubeResolution/2, cubeResolution/2, 100, 2000, .02);
     
     
     //ACTIVE
@@ -227,6 +220,19 @@ void Control::draw(){
         currentFrame.mesh.drawWireframe();
     }
     
+}
+
+void Control::sequencer(){
+    
+}
+
+void Control::shiftFrame(){
+    
+    //Add in a function that removes end and adds new from data
+    sequence.pop_back();
+    
+    
+    loadFrame();
 }
 
 
@@ -258,9 +264,8 @@ void Control::loadFrame(){
             
             if(particleSystem.size() == 0){
                 
-                //Add in a function that removes end and adds new from data
-                sequence.pop_back();
-                loadFrame();
+                shiftFrame();
+                
             }else { //if(currentFrame.leader == -1)
                 currentFrame.leader = ofRandom(0,particleSystem.size());
             }
@@ -272,77 +277,22 @@ void Control::loadFrame(){
             //Boolean to draw full mesh in addition to particle sys version
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
-           
-            ofVec3f totalPos;
+//            ofVec3f totalPos;
+//
+//            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
+//                totalPos += currentFrame.mesh.getVertex(i);
+//            }
             
-            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
-                totalPos += currentFrame.mesh.getVertex(i);
-            }
-            
-            camLook = totalPos/currentFrame.mesh.getVertices().size();
-            
+//            camLook = totalPos/currentFrame.mesh.getVertices().size();
             
             //I think randomParticle is better, just need to debug.
             
-            //                randParticle = ofRandom(particleSystem.size());
+            currentFrame.mesh = read.readMesh("meshes/"+sequence.back()->externalFileName);
             
+            addMeshToParticleSys();
             
-//            if(sequence.back()->mesh.getVertices().size() > 0 ){ //&& sequence.back()->particles.size() == 0
-            
-                currentFrame.mesh = read.readMesh("meshes/"+sequence.back()->externalFileName);
-            
-            
-            
-            
-
-            
-            
-                addMeshToParticleSys();
-                
-//            }
-            
-            //find best wat to do this but for now ok.
-            
-            //Hmmm maybe get rid of this.... rather than re-storing the particle data just start from scratch again
-            //Only keep a buffer of frames
-            //Then reload if you need more...
-            
-            //check which frame's particles are currently loaded into the system
-            //get a copy of the particles and replace the original frame's particles with modified
-            //particles. will never render the frame's particles in system.
-            
-            //instead of keeping the old position of data
-            //You are always loading in
-            //Always exploding
-            //instead just putting into backburner system as flotsam
-            
-//            for(int i = 0;i < sequence.size();i++){
-//                if(sequence[i]->uID == particleSystem.getOwner()) {
-//                    sequence[i]->particles = particleSystem.getParticles();
-//                    for(int j = 0; j < sequence[i]->particles.size(); j++ ){
-//                        backBurnerSystem.add(sequence[i]->particles[j]);
-////                        backBurnerSystem[i].setTarget(backBurnerSystem[i].x,backBurnerSystem[i].y,0);
-//                    }
-//                    particleSystem.clear();
-//                    break;
-//                }
-//            }
-            
-            
-//            vector<BinnedParticle> tempVec = particleSystem.getParticles();;
-//            for(int i = 0; i < tempVec.size(); i++ ){
-//                backBurnerSystem.add(tempVec[i]);
-//            }
-//
-//            particleSystem.clear();
-//
-//
-//
-//            for (int i = 0; i < sequence.back()->particles.size(); i++){
-//                particleSystem.add(sequence.back()->particles[i]);
-//            }
-            
-//            particleSystem.setOwner(sequence.back()->uID);//maybe still nice to preserve this info ?
+            //For camera to look at
+            randParticle = ofRandom(particleSystem.size());
             
             break;
         }
@@ -350,15 +300,9 @@ void Control::loadFrame(){
             currentFrame.mesh = sequence.back()->mesh;
             currentFrame.renderMesh = sequence.back()->renderMesh;
             
-             camPos = ofVec3f(1,0,0);
-            
             break;
         }
         case 4 : { // Image
-            
-            //****
-
-             camPos = ofVec3f(0,1,0);
             
             currentFrame.image = read.readImage("images/"+sequence.back()->externalFileName);
             
@@ -368,9 +312,20 @@ void Control::loadFrame(){
             
             addMeshToParticleSys();
             
-            cout << currentFrame.image.isAllocated() << endl;
+            //For camera to look at
+            randParticle = ofRandom(particleSystem.size());
             
+            break;
+        }
+        case 5 : { // Text
             
+//            I think maybe beter
+            
+//            for(int i = 0; i < currentFrame.historyVec.size(); i ++){
+//
+//            }
+            //For every history entry add the text to the sound manager
+            //soundManager.add()
             
             break;
         }

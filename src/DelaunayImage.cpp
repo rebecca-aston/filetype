@@ -13,7 +13,6 @@ ofMesh DelaunayImage::triangulateImage(ofImage img){
     
         image.setFromPixels( img.getPixels() );
     
-    
 
 		//Convert to grayscale image
 		grayImage = image;
@@ -22,15 +21,6 @@ ofMesh DelaunayImage::triangulateImage(ofImage img){
 		blurred = grayImage;
 		blurred.blurGaussian( 20);
     
-        
-
-//		//Thresholding for obtaining binary image
-//		mask = blurred;
-//		mask.threshold( ofMap(mouseX, 0, ofGetWidth(), 0, 200) );
-
-//        //Getting an inverted mask of image to use in contour finder
-//        inverted = mask;
-//        inverted.invert();
 
         //#### FIND INTERESTING POINTS #####
 		Mat imageCV;

@@ -80,6 +80,10 @@ vector< frame > Read::readJson(string path){
                 temp.frameType = 4;
             }
             
+            if(json["frames"][i]["frame-type"].asString() == "text"){
+                temp.frameType = 5;
+            }
+            
             if(dev)cout << json["frames"][i]["title"].asString() << endl;
             temp.title = json["frames"][i]["title"].asString();
             
@@ -115,12 +119,12 @@ vector< frame > Read::readJson(string path){
                 
                 string text = json["frames"][i]["history"][j]["text"].asString();
                 
-                if(text.find(".txt") == true && text.find("txt/") == true ){ //check if it's a specific path to a text file
+                if(text.find(".txt") != std::string::npos && text.find("txt/") != std::string::npos ){ //check if it's a specific path to a text file
                     if(dev)cout << readText(text) << endl;
-                    histEntry.text = json["frames"][i]["history"][j]["citation"].asString();
+                    histEntry.text = readText(text);
                 }else{
                     if(dev)cout << text << endl;
-                    histEntry.text = json["frames"][i]["history"][j]["citation"].asString();
+                    histEntry.text = text;
                 }
                 
                 temp.historyVec.push_back(histEntry);
@@ -151,8 +155,8 @@ string Read::readText(string path){
     string txt;
     
 //    test this later
-//    txt = ofBufferFromFile(path).getText();
-    cout << "READTEXT NOT IMPLEMENTED YET" << endl;
+    txt = ofBufferFromFile(path).getText();
+    cout << txt << endl;
     
     return txt;
 }

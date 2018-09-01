@@ -53,7 +53,7 @@ void ofApp::draw(){
     if(presentationMode){
         
         //Get it to always look at the center or maybe at leader or random particle
-        cam.lookAt(control.camLook,ofVec3f(0,0,1));
+        cam.lookAt(control.camLook,ofVec3f(0,0,1));//second argument is up vector
         
         
         
@@ -175,5 +175,5 @@ void ofApp::addForceButtonPresssed(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-//system("say 'this is a quick test' &");  
+    system("say 'this is a quick test' &");  
 }

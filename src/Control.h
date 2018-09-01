@@ -16,6 +16,7 @@
 #include "ofxAssimpModelLoader.h"
 #include "DataScreen.h"
 #include "DelaunayImage.h"
+#include "SoundManager.h"
 
 class Control {
 protected:
@@ -50,7 +51,6 @@ public:
     
     DelaunayImage del;
     
-    ofVec3f camPos;
     ofVec3f camLook;
     int randParticle;
     
@@ -61,6 +61,9 @@ public:
     void update();
     void loadFrame();
     void addMeshToParticleSys();
+    
+    void sequencer();
+    void shiftFrame();
     
     void setupDataScreen();
     void drawDataScreen();

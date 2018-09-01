@@ -27,6 +27,13 @@ void DataScreen::draw(){
         }
         
         
+        //Only responsible for dispalying on second screen
+        //So whatever updates to the historyvec are happening
+        //they are just being shown here.
+        
+        
+        
+        
         int centerScreen = ofGetWidth()/2;
         int newLine = ofGetHeight()/2;
         int lineHeight = font.stringHeight(currentFrame.collection);
