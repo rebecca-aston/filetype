@@ -20,8 +20,7 @@ void SoundManager::update(frame * current){
     
     if(!isReading && current->historyVec.size() > 0){ //current.historyVec.size() > 0 && current.currentHistoryIndex < current.historyVec.size() &&
         
-        isReading = true;
-        
+       
         if(current->currentHistoryIndex == -1){
             current->currentHistoryIndex = 0;
         }else{
@@ -31,6 +30,7 @@ void SoundManager::update(frame * current){
         for(int i = current->currentHistoryIndex; i < current->historyVec.size(); i++){
             if(current->historyVec[i].sound != "") soundFiles.push_back(current->historyVec[i].sound);
             if(current->historyVec[i].length > 0){
+                isReading = true;
                 readTime = current->historyVec[i].length;
                 readText(current->historyVec[current->currentHistoryIndex].text);
                 break;
@@ -51,7 +51,6 @@ void SoundManager::playSound(string path){
     player.load(path);
     
     if(player.isLoaded()){
-        player.setVolume(1.0);
         player.play();
     }else{
         cout << "Wav file cannot be loaded" << endl;

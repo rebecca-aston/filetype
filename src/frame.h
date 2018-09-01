@@ -28,6 +28,8 @@ struct frame {
     
     //frame data
     int frameType;
+    float weight;
+    vector<string> tags;
     string title;
     string desc;
     string material;

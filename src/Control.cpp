@@ -21,12 +21,11 @@ void Control::setup(){
     
     //Just initialize the sequence to the first few
     for(int i = 0; i < read.frameVec.size(); i++){
-        if(sequence.size() < 20){
+        if(sequence.size() < 5){
             
             sequence.push_back(&flock);
             sequence.push_back(&read.frameVec[i]);
-            
-            cout << read.frameVec[i].frameType << endl;
+  
         }else{
             break;
         }
@@ -76,9 +75,7 @@ void Control::update(){
     }else{
         if(ofGetElapsedTimeMillis() - startTime > currentFrame.totalTime){
             currentFrame.animating = false;
-            frame * temp = sequence.back();
-            sequence.push_front(temp);
-            sequence.pop_back();
+            sequencer();
         }
     }
     
@@ -217,7 +214,8 @@ void Control::update(){
     
     soundManager.update(&currentFrame);
     
-
+    
+    
 }
 
 
@@ -234,13 +232,33 @@ void Control::draw(){
 
 void Control::sequencer(){
     
+    //Get the weight of a frame
+    //Then calculate based off of the first frame's tags the next most likely set of frames
+    
+    
+    //What if instead of sequnce being a series of pointers
+    //sequence is a vector of key value pairs, the index of the frame in the modelData
+    //And it's weight.
+    //Then sort on weight
+    
+    
+    frame * temp = sequence.back();
+    sequence.push_front(temp);
+    
+    for(int i = 0; i < read.frameVec.size(); i++){
+        cout << read.frameVec[i].weight << endl;
+    }
+    
+//    sequence.push_front();
+    
+    sequence.pop_back();
+    
 }
 
 void Control::shiftFrame(){
     
     //Add in a function that removes end and adds new from data
     sequence.pop_back();
-    
     
     loadFrame();
 }
@@ -347,8 +365,6 @@ void Control::loadFrame(){
     if(currentFrame.historyVec.size() > 0){
         for(int i = 0; i < currentFrame.historyVec.size(); i ++){
             int timeAprox = int(currentFrame.historyVec[i].text.length()*70);
-            
-            cout << timeAprox << endl;
             
             currentFrame.historyVec[i].length = timeAprox;
             

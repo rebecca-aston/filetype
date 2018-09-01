@@ -84,6 +84,14 @@ vector< frame > Read::readJson(string path){
                 temp.frameType = 5;
             }
             
+            if(dev)cout << json["frames"][i]["weight"].asFloat() << endl;
+            temp.weight = json["frames"][i]["weight"].asFloat();
+            
+            for(int j = 0; j < json["frames"][i]["tags"].size(); j++){
+                if(dev)cout << json["frames"][i]["tags"][j].asString() << endl;
+                temp.tags.push_back(json["frames"][i]["tags"][j].asString());
+            }
+            
             if(dev)cout << json["frames"][i]["title"].asString() << endl;
             temp.title = json["frames"][i]["title"].asString();
             
