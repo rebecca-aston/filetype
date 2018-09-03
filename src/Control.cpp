@@ -11,37 +11,6 @@ Control::Control(){
     
 }
 
-//Needs to be many current frames...
-
-// a mesh or text/image with my own voice also just gets played
-//History / read out stream -> so a frame with type text is also displaying any images.
-//Images / Link is this weird middle thing which is adding images to particle (MAYBE NEED TO ABANDON)
-//Mesh / texture / particles system stream
-
-
-//Extend read to create separate framevecs by type
-
-//Separate Sequencer out to be:
-//sort on weights on any read framevec
-//have multiple sequences....
-//what about load frame...
-
-//sequencer is a class that takes in a read framevec red and creates a sequence 
-//sorts framevec
-//manages sequence
-//sequencer has a currentFrame that belongs to it
-//it also stores what type it is
-
-//Load frame is jsut being called on the vector of sequencers every update.
-//Datascreen takes all current frames for all sequences and displays their data
-
-
-//Commentary
-
-//Have another field in frame that is commentary field.
-//if populated points to the few sound files I have.
-
-
 void Control::setup(){
     
     //Set up all data to be used for commentary pieces
@@ -123,17 +92,7 @@ void Control::setupDataScreen(){
 
 void Control::update(){
 
-    
-    //Check animation timing to see if should load in new frame
-    //Then loadFrame()
-    
-    //Rather than time based... should probably just be stay in the holding pattern
-    //Until new data is added
-    //But not sure....
-    
-    
-    //THIS will all be in a loop of initialized sequences
-    //i.e. checking if sequences[i].currentFrame.animating
+
     for(int i = 0; i < sequences.size();i++){
         if(!sequences[i].currentFrame.animating){
             sequences[i].startTime = ofGetElapsedTimeMillis(); 
@@ -151,22 +110,11 @@ void Control::update(){
         
     }
 
-//    New update logic
     
-//    For the particle system
-//    I think there will be two states
-//    Either flocking / exploding
-//    Or being/going to position
-//    Maybe flocking is not a frame type but a flag that get triggered by a commentary frame type
+    //Just for audio tracks not system read out
+    soundManager.updateVolumes();
     
-//    Try move sound Manager into load frame
-//    Better place to be becasue then only get called if not animating.
-//    Can probably get rid of the whole is reading thing......
-
-//    Similarly image roulete logic can get called as often as needed through a faster moving image vec.
-    
-    
-    
+    //Particle System
     //Main particle system that is the sort of ACTIVE state
     //which the new frame is loading into.
     //Then there is another BACKGROUND "system" which is the scattered accumulation of particles
@@ -213,14 +161,15 @@ void Control::update(){
         
     }else{
         
-        camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
+        camLook = ofVec3f(particleSystem[randParticle].xt,particleSystem[randParticle].yt,particleSystem[randParticle].zt);
         
         // Not really using this at the moment
         //Move to index if not there
-        //                for(int i = 0; i < particleSystem.size(); i++) {
-        //                    BinnedParticle& cur = particleSystem[i];
-        //                    particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
-        //                }
+        for(int i = 0; i < particleSystem.size(); i++) {
+            BinnedParticle& cur = particleSystem[i];
+            particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
+            cur.addDampingForce();
+        }
         
         
     }
@@ -296,7 +245,7 @@ void Control::update(){
             //Jump into sequencer to push frame on back/next
             //maybe wait for end of animation to set imgRoulete.addTextureToSystem to false again
             
-            cout << "ADDED TO PARTICLE SYSTEM" << endl;
+//            cout << "ADDED TO PARTICLE SYSTEM" << endl;
             
             
         }
@@ -350,17 +299,6 @@ void Control::loadFrame(Sequencer * s){
             break;
         }
         case 2 : { // Mesh and Colors
-
-            
-//            ofVec3f totalPos;
-//
-//            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
-//                totalPos += currentFrame.mesh.getVertex(i);
-//            }
-            
-//            camLook = totalPos/currentFrame.mesh.getVertices().size();
-            
-            //I think randomParticle is better, just need to debug.
             
             s->currentFrame.mesh = read.readMesh("meshes/"+s->currentFrame.externalFileName);
             
@@ -381,11 +319,7 @@ void Control::loadFrame(Sequencer * s){
             
             //Create and dispose of delaunay iamge here
             DelaunayImage del;
-            
             s->currentFrame.image = read.readImage("textures/"+s->currentFrame.externalFileName);
-            
-            camLook = ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2);
-            
             s->currentFrame.mesh = del.triangulateImage(s->currentFrame.image);
             
             addMeshToParticleSys(s->currentFrame.mesh);
@@ -403,6 +337,18 @@ void Control::loadFrame(Sequencer * s){
                 s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
             }
             
+            if(s->currentFrame.historyVec.size() > 0){
+                for(int i = 0; i < s->currentFrame.historyVec.size(); i ++){
+                    int timeAprox = int(s->currentFrame.historyVec[i].text.length()*70);
+                    
+                    s->currentFrame.historyVec[i].length = timeAprox;
+                    
+                    //Do this in case the text is very long??
+                    s->currentFrame.totalTime += timeAprox;
+                }
+            }
+            
+            soundManager.updateReadOut(&s->currentFrame); //Will this allow overlapping? probably not... could strip down
             break;
         }
         default : {
@@ -416,19 +362,11 @@ void Control::loadFrame(Sequencer * s){
             
     }
     
-    if(s->currentFrame.historyVec.size() > 0){
-        for(int i = 0; i < s->currentFrame.historyVec.size(); i ++){
-            int timeAprox = int(s->currentFrame.historyVec[i].text.length()*70);
-            
-            s->currentFrame.historyVec[i].length = timeAprox;
-            
-            //Do this in case the text is very long??
-            s->currentFrame.totalTime += timeAprox;
-        }
-    }
+
+    
+    soundManager.updateSound(&s->currentFrame);
     
     //Also maybe better to separate soundManager into text read and sound play
-    soundManager.update(&s->currentFrame); //Will this allow overlapping? probably not... could strip down
     dataScreen.loadData(s->currentFrame);
 }
 
@@ -462,7 +400,7 @@ void Control::addMeshToParticleSys(ofMesh mesh){
         
         ofVec3f t = mesh.getVertex( mesh.getIndex(i));
         
-        BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
+        BinnedParticle particle(t.x+ofRandom(-50,50), t.y+ofRandom(-50,50), t.z+ofRandom(-50,50), 0, 0, 0);
         
         particle.setTarget(t.x,t.y,t.z);
         

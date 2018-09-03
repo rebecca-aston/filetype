@@ -15,20 +15,20 @@ class SoundManager {
 protected:
     
     int startTime, readTime;
-    void playSound(string path);
+    void addAudioTrack(string path);
     void readText(string text);
     void checkIsReading();
     
     bool isReading;
     
-    ofSoundPlayer player;
-    vector<string> soundFiles;
+    vector< ofSoundPlayer > audioTracks;
     
 public:
     SoundManager();
     
-    void update(frame * current);
-    
+    void updateReadOut(frame * current);
+    void updateSound(frame * current);
+    void updateVolumes();
 
 };
 

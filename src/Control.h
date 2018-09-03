@@ -27,7 +27,7 @@ protected:
     
     //PROBABLY DON'T NEED half of these
     float timeStep;
-    float particleNeighborhood, particleRepulsion, particleCohesion, particleAlign; //Hmm align is probably more akin to directional vector
+    float particleNeighborhood, particleRepulsion, particleCohesion, particleAlign; 
     float centerAttraction;
     float cubeResolution;
     

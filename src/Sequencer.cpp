@@ -11,37 +11,6 @@ Sequencer::Sequencer(){
     
 }
 
-//Needs to be many current frames...
-
-// a mesh or text/image with my own voice also just gets played
-//History / read out stream -> so a frame with type text is also displaying any images.
-//Images / Link is this weird middle thing which is adding images to particle (MAYBE NEED TO ABANDON)
-//Mesh / texture / particles system stream
-
-
-//Extend read to create separate framevecs by type
-
-//Separate Sequencer out to be:
-//sort on weights on any read framevec
-//have multiple sequences....
-//what about load frame...
-
-//sequencer is a class that creates / stores sequence and takes in pointer to framevec
-//sorts framevec
-//manages sequence
-//sequencer has a currentFrame that belongs to it
-//it also stores what type it is
-
-//Load frame is jsut being called on the vector of sequencers every update.
-//Datascreen takes all current frames for all sequences and displays their data
-
-
-//Commentary
-
-//Have another field in frame that is commentary field.
-//if populated points to the few sound files I have.
-
-
 void Sequencer::setup(vector<frame> vecRef, string type){
     
     vecType = type;
@@ -54,10 +23,6 @@ void Sequencer::setup(vector<frame> vecRef, string type){
     
     sequencer();
     
-    //Initialize the sequence to one random frame from Model
-//    sequence.push_back(&frameVec[ofRandom(frameVec.size())]);
-    
-//    cout << sequence.back()->uID << endl;
 }
 
 void Sequencer::update(){
@@ -126,10 +91,10 @@ void Sequencer::sequencer(){
     
     ofSort(frameVec, &compareByWeight);
     
-     for(int i = 0; i < frameVec.size(); i++){
-         cout << frameVec[i].title ;
-         cout << ": "+ofToString(frameVec[i].weight) << endl;
-     }
+//     for(int i = 0; i < frameVec.size(); i++){
+//         cout << frameVec[i].title ;
+//         cout << ": "+ofToString(frameVec[i].weight) << endl;
+//     }
     
     //Randomly choose from the first quarter of strongest weighted frames
     weightedRandom = ofRandom(ceil(frameVec.size()/2));
