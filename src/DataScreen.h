@@ -18,11 +18,15 @@ protected:
     
     frame currentFrame;
     
+    ofFbo * imgFbo;
+    
 public:
     DataScreen();
     
     void setup();
     void draw();
+    
+    void drawImageRoulette(ofFbo * fbo);
     void loadData(frame current);
 
 };

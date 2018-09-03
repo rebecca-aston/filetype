@@ -13,6 +13,9 @@ public:
     ofMesh triangulateImage(ofImage img);
 	void draw();
     vector <ofPoint> getTriangle(int i);
+    
+    void setupRoulete();
+    void processImage();
 
 	ofxCvColorImage image;
 
@@ -24,5 +27,9 @@ public:
     vector<Point2f> corners;
     
     ofxDelaunay triangulation;
+    
+    ofDirectory imageDirectory;
+    bool addTextureToSystem;
+    ofFbo imgFbo;
 };
 

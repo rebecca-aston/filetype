@@ -51,7 +51,7 @@ protected:
 public:
     Control();
     
-    DelaunayImage del;
+    DelaunayImage imgRoulete;
     
     ofVec3f camLook;
     int randParticle;

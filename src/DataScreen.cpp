@@ -13,12 +13,18 @@ DataScreen::DataScreen(){
 
 void DataScreen::setup(){
     font.load("Calibri.ttf",15);
+//    imgFbo->allocate(400,400,GL_RGBA);
 }
 
 void DataScreen::draw(){
+    
+    ofPushMatrix();
     ofBackground(0);
+    ofPopMatrix();
     if(font.isLoaded()){
         
+
+
         if(currentFrame.image.isAllocated()){
             ofPushMatrix();
 //            ofScale(.5, .5);
@@ -26,6 +32,9 @@ void DataScreen::draw(){
             ofPopMatrix();
         }
         
+//        if(imgFbo->isAllocated()){
+            imgFbo->draw(0,ofGetHeight()/2);///-imgFbo.getWidth()
+//        }
         
         //Only responsible for dispalying on second screen
         //So whatever updates to the historyvec are happening
@@ -43,6 +52,13 @@ void DataScreen::draw(){
         font.drawString(currentFrame.title, centerScreen-(font.stringWidth(currentFrame.title)/2), newLine);
         
     }
+}
+
+void DataScreen::drawImageRoulette(ofFbo * fbo){ 
+    cout << fbo->getHeight() << endl;
+//    imgFbo->clear();
+//    imgFbo.attachTexture(fbo.getTexture(), GL_RGBA,0);
+    imgFbo = fbo;
 }
 
 void DataScreen::loadData(frame current){

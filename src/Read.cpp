@@ -77,6 +77,10 @@ vector< frame > Read::readJson(string path){
             }
             
             if(json["frames"][i]["frame-type"].asString() == "image"){
+                temp.frameType = 3;
+            }
+            
+            if(json["frames"][i]["frame-type"].asString() == "texture"){
                 temp.frameType = 4;
             }
             

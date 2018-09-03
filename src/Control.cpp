@@ -11,6 +11,8 @@ Control::Control(){
     
 }
 
+// set web images in another directory that are always just being looped through and displayed
+// I think maybe try and grab an image that "looks good" like could trace image to get a "whole" mesh OR just make it random to throw into system.
 
 
 
@@ -20,27 +22,31 @@ void Control::setup(){
     flock.frameType = 1;
     flock.totalTime = 10000;
     
+    //Set up all data to be used for historical / raw data
     read.readModel();
     
-//    Use the flocking type as the authorial intent frame...
-//    That could also be when you take a snapshot of the Pattern texture thing.
-//    sequence.push_back(&flock);
-    
-    //Just initialize the sequence to the first few
+    //Store original order of data as unique identifier to be used for comparison later
     for(int i = 0; i < read.frameVec.size(); i++){
         read.frameVec[i].uID = i;
     }
     
-    
+    //Initialize the sequence to one random frame from Model
     sequence.push_back(&read.frameVec[ofRandom(read.frameVec.size())]);
     
     
-    // this number describes how many bins are used
-    // on my machine, 2 is the ideal number (2^2 = 4x4 pixel bins)
-    // if this number is too high, binning is not effective
-    // because the screen is not subdivided enough. if
-    // it's too low, the bins take up so much memory as to
-    // become inefficient.
+    //Set up all data to be used for commentary pieces
+//    Use the flocking type as the authorial intent frame...
+//    That could also be when you take a snapshot of the Pattern texture thing.
+//    sequence.push_back(&flock);
+    
+    //Initialize image roulette which will add images scraped from the internet into
+    //particle system as a "texture" / fragments in a 3D space
+    imgRoulete.setupRoulete();
+    
+    //Data Screen and Sound Manager do not need to be initialized.
+    
+    
+    //Initialize Particle Systems
     int binPower = 6;
     cubeResolution = 1000;
     
@@ -222,6 +228,25 @@ void Control::update(){
     soundManager.update(&currentFrame);
     
     
+    if(ofGetFrameNum() % 60 == 0){ // && if we are not still adding texture to system
+        //get fbo from imgRoulete and draw
+        
+        imgRoulete.processImage();
+        dataScreen.drawImageRoulette(&imgRoulete.imgFbo);
+        if(imgRoulete.addTextureToSystem){
+            //Get mesh that has been generated 
+            //Create new frame of type mesh
+            
+            //Jump into sequencer to push frame on back/next
+            //maybe wait for end of animation to set imgRoulete.addTextureToSystem to false again
+            
+            cout << "ADDED TO PARTICLE SYSTEM" << endl;
+            
+            
+        }
+        
+    }
+    
     
 }
 
@@ -359,14 +384,17 @@ void Control::loadFrame(){
             break;
         }
         case 3 : { // Mesh
-            currentFrame.mesh = sequence.back()->mesh;
-            currentFrame.renderMesh = sequence.back()->renderMesh;
+//            currentFrame.mesh = sequence.back()->mesh;
+//            currentFrame.renderMesh = sequence.back()->renderMesh;
             
             break;
         }
-        case 4 : { // Image
+        case 4 : { // Texture
             
-            currentFrame.image = read.readImage("images/"+sequence.back()->externalFileName);
+            //Create and dispose of delaunay iamge here
+            DelaunayImage del;
+            
+            currentFrame.image = read.readImage("textures/"+sequence.back()->externalFileName);
             
             camLook = ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2);
             
@@ -382,6 +410,11 @@ void Control::loadFrame(){
         case 5 : { // Text
             //If it's only text based, let the sound keep playing in the background?
             currentFrame.totalTime = 500;
+            
+            if(sequence.back()->externalFileName != "" && (sequence.back()->externalFileName.find(".png") != std::string::npos || sequence.back()->externalFileName.find(".jpg") != std::string::npos || sequence.back()->externalFileName.find(".jpeg") != std::string::npos)){
+                currentFrame.image = read.readImage("images/"+sequence.back()->externalFileName);
+            }
+            
             break;
         }
         default : {
@@ -394,6 +427,7 @@ void Control::loadFrame(){
         }
             
     }
+    
     
     if(currentFrame.historyVec.size() > 0){
         for(int i = 0; i < currentFrame.historyVec.size(); i ++){

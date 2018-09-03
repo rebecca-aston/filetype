@@ -1,7 +1,7 @@
 #include "DelaunayImage.h"
 
 DelaunayImage::DelaunayImage(){
-    
+    addTextureToSystem = false;
 }
 
 //--------------------------------------------------------------
@@ -88,3 +88,66 @@ vector <ofPoint> DelaunayImage::getTriangle(int i){
     points.push_back(pointC);
     return points;
 }
+
+void DelaunayImage::setupRoulete(){
+    
+    imgFbo.allocate(400,400,GL_RGB);
+    
+    imageDirectory.open("images");
+    
+    if(imageDirectory.exists()){
+        
+        imageDirectory.listDir("images");
+        imageDirectory.getFiles();
+        
+    }
+    
+}
+
+void DelaunayImage::processImage(){
+    
+    ofImage img;
+    
+    addTextureToSystem = (ofRandom(1)>.9)?true:false;
+    
+    string file = imageDirectory[ofRandom(imageDirectory.size())].getFileName();//
+    
+    cout << file << endl;
+    
+    img.load("images/"+file);
+    
+    imgFbo.begin();
+    
+    ofClear(0,0,0);
+    
+    if(img.getWidth()>img.getHeight()){
+        ofPushMatrix();
+        float scale = imgFbo.getWidth()/img.getWidth();
+        ofScale(scale,scale);
+        img.draw(0, imgFbo.getHeight()-img.getHeight()/2);
+        ofPopMatrix();
+    }else{
+        ofPushMatrix();
+        float scale = imgFbo.getHeight()/img.getHeight();
+        ofScale(scale,scale);
+        img.draw(imgFbo.getWidth()-img.getWidth()/2,0);
+        ofPopMatrix();
+    }
+    
+    if(addTextureToSystem){
+        //Do logic to isolate image before returning fbo
+        
+        //Here set the fbo to an image value
+        //Then Process/isolate
+        //Then delaunay it
+        //Store mesh as entry on this object to be used in next step to create frame
+        
+        //Add weird process overlay to FBO to indicate that it has been chosen
+    }
+    
+    imgFbo.end();
+    
+}
+
+
+
