@@ -16,9 +16,13 @@ class DataScreen {
 protected:
     ofTrueTypeFont font;
     
-    frame currentFrame;
-    
     ofImage rouleteImage;
+    vector<frame> drawFrames;
+    
+    ofCamera cam;
+    
+    int colWidth;
+    ofVec2f imgSectionOrigin;
     
 public:
     DataScreen();
@@ -26,8 +30,11 @@ public:
     void setup();
     void draw();
     
+    string wrapString(string text, int width);
+    
     void drawImageRoulette(ofImage i);
     void loadData(frame current);
+    void removeFrame(int t);
 
 };
 

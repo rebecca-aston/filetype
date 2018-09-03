@@ -70,6 +70,7 @@ void SoundManager::addAudioTrack(string path){
     
     if(sp.isLoaded()){
         audioTracks.push_back(sp);
+        audioTracks.back().setVolume(1.2);
         audioTracks.back().play();
     }else{
         cout << "Wav file cannot be loaded" << endl;
