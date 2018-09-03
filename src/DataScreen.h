@@ -18,7 +18,7 @@ protected:
     
     frame currentFrame;
     
-    ofFbo * imgFbo;
+    ofImage rouleteImage;
     
 public:
     DataScreen();
@@ -26,7 +26,7 @@ public:
     void setup();
     void draw();
     
-    void drawImageRoulette(ofFbo * fbo);
+    void drawImageRoulette(ofImage i);
     void loadData(frame current);
 
 };

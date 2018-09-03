@@ -231,8 +231,8 @@ void Control::update(){
     if(ofGetFrameNum() % 60 == 0){ // && if we are not still adding texture to system
         //get fbo from imgRoulete and draw
         
-        imgRoulete.processImage();
-        dataScreen.drawImageRoulette(&imgRoulete.imgFbo);
+        ofImage iR = imgRoulete.processImage();
+        dataScreen.drawImageRoulette(iR);
         if(imgRoulete.addTextureToSystem){
             //Get mesh that has been generated 
             //Create new frame of type mesh

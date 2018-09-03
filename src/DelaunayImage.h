@@ -15,7 +15,7 @@ public:
     vector <ofPoint> getTriangle(int i);
     
     void setupRoulete();
-    void processImage();
+    ofImage processImage();
 
 	ofxCvColorImage image;
 
@@ -30,6 +30,6 @@ public:
     
     ofDirectory imageDirectory;
     bool addTextureToSystem;
-    ofFbo imgFbo;
+    int scale;
 };
 

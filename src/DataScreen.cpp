@@ -32,10 +32,11 @@ void DataScreen::draw(){
             ofPopMatrix();
         }
         
-//        if(imgFbo->isAllocated()){
-            imgFbo->draw(0,ofGetHeight()/2);///-imgFbo.getWidth()
-//        }
-        
+        if(rouleteImage.isAllocated()){
+            //scale it correctly
+            rouleteImage.draw(0,ofGetHeight()/2);///-imgFbo.getWidth()
+        }
+    
         //Only responsible for dispalying on second screen
         //So whatever updates to the historyvec are happening
         //they are just being shown here.
@@ -54,11 +55,8 @@ void DataScreen::draw(){
     }
 }
 
-void DataScreen::drawImageRoulette(ofFbo * fbo){ 
-    cout << fbo->getHeight() << endl;
-//    imgFbo->clear();
-//    imgFbo.attachTexture(fbo.getTexture(), GL_RGBA,0);
-    imgFbo = fbo;
+void DataScreen::drawImageRoulette(ofImage i){
+    rouleteImage = i;
 }
 
 void DataScreen::loadData(frame current){

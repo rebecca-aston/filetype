@@ -91,8 +91,6 @@ vector <ofPoint> DelaunayImage::getTriangle(int i){
 
 void DelaunayImage::setupRoulete(){
     
-    imgFbo.allocate(400,400,GL_RGB);
-    
     imageDirectory.open("images");
     
     if(imageDirectory.exists()){
@@ -104,35 +102,15 @@ void DelaunayImage::setupRoulete(){
     
 }
 
-void DelaunayImage::processImage(){
+ofImage DelaunayImage::processImage(){
     
     ofImage img;
     
-    addTextureToSystem = (ofRandom(1)>.9)?true:false;
+    addTextureToSystem = (ofRandom(1)>.7)?true:false;
     
     string file = imageDirectory[ofRandom(imageDirectory.size())].getFileName();//
     
-    cout << file << endl;
-    
     img.load("images/"+file);
-    
-    imgFbo.begin();
-    
-    ofClear(0,0,0);
-    
-    if(img.getWidth()>img.getHeight()){
-        ofPushMatrix();
-        float scale = imgFbo.getWidth()/img.getWidth();
-        ofScale(scale,scale);
-        img.draw(0, imgFbo.getHeight()-img.getHeight()/2);
-        ofPopMatrix();
-    }else{
-        ofPushMatrix();
-        float scale = imgFbo.getHeight()/img.getHeight();
-        ofScale(scale,scale);
-        img.draw(imgFbo.getWidth()-img.getWidth()/2,0);
-        ofPopMatrix();
-    }
     
     if(addTextureToSystem){
         //Do logic to isolate image before returning fbo
@@ -145,8 +123,7 @@ void DelaunayImage::processImage(){
         //Add weird process overlay to FBO to indicate that it has been chosen
     }
     
-    imgFbo.end();
-    
+    return img;
 }
 
 
