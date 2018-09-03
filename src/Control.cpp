@@ -11,6 +11,9 @@ Control::Control(){
     
 }
 
+
+
+
 void Control::setup(){
     
 
@@ -19,17 +22,18 @@ void Control::setup(){
     
     read.readModel();
     
+//    Use the flocking type as the authorial intent frame...
+//    That could also be when you take a snapshot of the Pattern texture thing.
+//    sequence.push_back(&flock);
+    
     //Just initialize the sequence to the first few
     for(int i = 0; i < read.frameVec.size(); i++){
-        if(sequence.size() < 5){
-            
-            sequence.push_back(&flock);
-            sequence.push_back(&read.frameVec[i]);
-  
-        }else{
-            break;
-        }
+        read.frameVec[i].uID = i;
     }
+    
+    
+    sequence.push_back(&read.frameVec[ofRandom(read.frameVec.size())]);
+    
     
     // this number describes how many bins are used
     // on my machine, 2 is the ideal number (2^2 = 4x4 pixel bins)
@@ -71,19 +75,22 @@ void Control::update(){
     if(!currentFrame.animating){
         startTime = ofGetElapsedTimeMillis();
         currentFrame.animating = true;
+        
+        for(int i = 0; i < sequence.size();i++){
+            cout << "CURRENT: "+currentFrame.title+" INDEX: "+ofToString(i) << endl;
+        }
+        
         loadFrame();
-    }else{
+        sequencer();
+    }else{// maybe if getting too much lag with everything happening at load do sequencer half way
         if(ofGetElapsedTimeMillis() - startTime > currentFrame.totalTime){
             currentFrame.animating = false;
-            sequencer();
         }
     }
-    
     
     //Main particle system that is the sort of ACTIVE state
     //which the new frame is loading into.
     //Then there is another BACKGROUND "system" which is the scattered accumulation of particles
-    
     //ACTIVE
     particleSystem.setTimeStep(timeStep);
     //BACKGROUND
@@ -230,30 +237,53 @@ void Control::draw(){
     
 }
 
+bool compareByWeight(const frame &a, const frame &b){
+    return a.weight > b.weight;
+}
+
+bool in_array(const std::string &value, const std::vector<string> &array){
+    return std::find(array.begin(), array.end(), value) != array.end();
+}
+
+//A sequencer of the content that is a weighted random choice based off of tags
+//i.e. loose association to the current frame
 void Control::sequencer(){
     
-    //Get the weight of a frame
-    //Then calculate based off of the first frame's tags the next most likely set of frames
-    
-    
-    //What if instead of sequnce being a series of pointers
-    //sequence is a vector of key value pairs, the index of the frame in the modelData
-    //And it's weight.
-    //Then sort on weight
-    
-    
-    frame * temp = sequence.back();
-    sequence.push_front(temp);
-    
     for(int i = 0; i < read.frameVec.size(); i++){
-        cout << read.frameVec[i].weight << endl;
+        float w = read.frameVec[i].weight;
+        w *= 0.1;
+        
+        for(int j = 0; j < read.frameVec[i].tags.size(); j++){
+            if(read.frameVec[i].uID != currentFrame.uID){
+                if(in_array(read.frameVec[i].tags[j],currentFrame.tags)){
+                    
+                    w += 1/float(currentFrame.tags.size());
+                    
+                }
+            }
+        }
+    
+        read.frameVec[i].weight = MIN(w,1);
+
     }
     
-//    sequence.push_front();
+    ofSort(read.frameVec, &compareByWeight);
+    
+     for(int i = 0; i < read.frameVec.size(); i++){
+         cout << read.frameVec[i].title ;
+         cout << ": "+ofToString(read.frameVec[i].weight) << endl;
+     }
+    
+    //Randomly choose from the first quarter of strongest weighted frames
+    int weightedRandom = ofRandom(ceil(read.frameVec.size()/2));
+    if(read.frameVec[weightedRandom].uID == currentFrame.uID) weightedRandom ++; //leave in just in case get repetition
+    sequence.push_front(&read.frameVec[weightedRandom]);
     
     sequence.pop_back();
     
 }
+
+
 
 void Control::shiftFrame(){
     
@@ -270,7 +300,10 @@ void Control::shiftFrame(){
 void Control::loadFrame(){
     
     //Assume all frames will have this basic data
+    currentFrame.uID = sequence.back()->uID;
     currentFrame.frameType = sequence.back()->frameType;
+    currentFrame.weight = sequence.back()->weight;
+    currentFrame.tags = sequence.back()->tags;
     currentFrame.totalTime = sequence.back()->totalTime;
     
     currentFrame.collection = sequence.back()->collection;

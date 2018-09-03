@@ -46,8 +46,8 @@ void DataScreen::draw(){
 }
 
 void DataScreen::loadData(frame current){
-    cout << current.frameType << endl;
-    cout << current.desc << endl;
+//    cout << current.frameType << endl;
+//    cout << current.desc << endl;
     currentFrame = current;
 }
 

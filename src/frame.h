@@ -6,7 +6,7 @@
 struct frame {
     
     //initialize with values for logic checks later
-    frame(string i = "frame"+ofGetTimestampString(), int f = -1, bool a = false, bool rM = false, int t = -1, int l = -1, int hI = -1){
+    frame(int i = 0, int f = -1, bool a = false, bool rM = false, int t = -1, int l = -1, int hI = -1){
         uID = i;
         frameType = f;
         animating = a;
@@ -39,7 +39,7 @@ struct frame {
     int currentHistoryIndex;
     
     //programmatic stuff
-    string uID;
+    int uID;
     bool animating;
     bool renderMesh;
     
