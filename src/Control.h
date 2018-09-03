@@ -18,12 +18,14 @@
 #include "DataScreen.h"
 #include "DelaunayImage.h"
 #include "SoundManager.h"
+#include "Sequencer.h"
 
 class Control {
 protected:
 
     // Binned particle setup
     
+    //PROBABLY DON'T NEED half of these
     float timeStep;
     float particleNeighborhood, particleRepulsion, particleCohesion, particleAlign; //Hmm align is probably more akin to directional vector
     float centerAttraction;
@@ -35,21 +37,32 @@ protected:
     bool isMousePressed, slowMotion;
     
     bool drawBalls;
-        
-    deque < frame > frames;
-    deque < frame* > sequence;
-    
-    frame currentFrame;
     
     Read read;
     Write write;
     
-    frame flock;
+//    frame flock;
     
     SoundManager soundManager;
+    
+    bool scattering;
+    int scatterSource;
    
 public:
     Control();
+    
+    void setup();
+    void draw();
+    void update();
+    void loadFrame(Sequencer * sequence); 
+    void addMeshToParticleSys(ofMesh mesh);
+    
+    void setupDataScreen();
+    void drawDataScreen();
+    
+    void exportPLY();
+    
+    vector<Sequencer> sequences;
     
     DelaunayImage imgRoulete;
     
@@ -58,19 +71,6 @@ public:
     
     DataScreen dataScreen;
     
-    void setup();
-    void draw();
-    void update();
-    void loadFrame();
-    void addMeshToParticleSys();
-    
-    void sequencer();
-    void shiftFrame();
-    
-    void setupDataScreen();
-    void drawDataScreen();
-    
-    void exportPLY();
     
 //    If I need to add to GUI
 //    ofParameter<float> SIDEWAYS{"Sideways", 0, -1, 1};

@@ -26,14 +26,31 @@ void Read::readModel(){
             
             for(int j = 0; j < tempVec.size(); j++){
                 
-                frameVec.push_back(tempVec[j]);
+                if(tempVec[j].frameType == 1){//process commentary
+                    processFrameVec.push_back(tempVec[j]);
+                }
+                if(tempVec[j].frameType == 2 || tempVec[j].frameType == 4){//Meshes and textures for 3D
+                    threeDFrameVec.push_back(tempVec[j]);
+                }
+                if(tempVec[j].frameType == 3){//image
+                    imageFrameVec.push_back(tempVec[j]);
+                }
+                if(tempVec[j].frameType == 5){//text
+                    textFrameVec.push_back(tempVec[j]);
+                }
                 
             }
         
-            //returned frame add to the larger data structure
         }
     }
 
+}
+
+void Read::clearVectors(){
+    imageFrameVec.clear();
+    threeDFrameVec.clear();
+    textFrameVec.clear();
+    processFrameVec.clear();
 }
 
 vector< frame > Read::readJson(string path){
@@ -72,6 +89,11 @@ vector< frame > Read::readJson(string path){
             
             //Frame specific data
             if(dev)cout << json["frames"][i]["frame-type"].asString() << endl;
+            
+            if(json["frames"][i]["frame-type"].asString() == "process"){
+                temp.frameType = 1;
+            }
+            
             if(json["frames"][i]["frame-type"].asString() == "mesh"){
                 temp.frameType = 2;
             }

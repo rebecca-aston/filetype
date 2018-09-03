@@ -11,6 +11,8 @@ public:
     Read();
     
     void readModel();
+    void clearVectors();
+    
     vector< frame > readJson(string path); // return type?
     ofMesh readMesh(string path);
 //    ofSound readSound(string path);
@@ -18,7 +20,10 @@ public:
     ofImage readImage(string path);
     
     ofDirectory modelData;
-    vector< frame > frameVec;
+    vector< frame > imageFrameVec;
+    vector< frame > threeDFrameVec;
+    vector< frame > textFrameVec;
+    vector< frame > processFrameVec;
     bool dev;
     
 };

@@ -11,34 +11,82 @@ Control::Control(){
     
 }
 
-// set web images in another directory that are always just being looped through and displayed
-// I think maybe try and grab an image that "looks good" like could trace image to get a "whole" mesh OR just make it random to throw into system.
+//Needs to be many current frames...
 
+// a mesh or text/image with my own voice also just gets played
+//History / read out stream -> so a frame with type text is also displaying any images.
+//Images / Link is this weird middle thing which is adding images to particle (MAYBE NEED TO ABANDON)
+//Mesh / texture / particles system stream
+
+
+//Extend read to create separate framevecs by type
+
+//Separate Sequencer out to be:
+//sort on weights on any read framevec
+//have multiple sequences....
+//what about load frame...
+
+//sequencer is a class that takes in a read framevec red and creates a sequence 
+//sorts framevec
+//manages sequence
+//sequencer has a currentFrame that belongs to it
+//it also stores what type it is
+
+//Load frame is jsut being called on the vector of sequencers every update.
+//Datascreen takes all current frames for all sequences and displays their data
+
+
+//Commentary
+
+//Have another field in frame that is commentary field.
+//if populated points to the few sound files I have.
 
 
 void Control::setup(){
     
-
-    flock.frameType = 1;
-    flock.totalTime = 10000;
+    //Set up all data to be used for commentary pieces
+    //    Use the flocking type as the authorial intent frame...
+    //    That could also be when you take a snapshot of the Pattern texture thing.
+    //    sequence.push_back(&flock);
+//    flock.frameType = 1;
+//    flock.totalTime = 10000;
     
     //Set up all data to be used for historical / raw data
     read.readModel();
     
-    //Store original order of data as unique identifier to be used for comparison later
-    for(int i = 0; i < read.frameVec.size(); i++){
-        read.frameVec[i].uID = i;
+    if(read.imageFrameVec.size() > 0){
+        Sequencer imageSequence;
+        imageSequence.setup(read.imageFrameVec, "image");
+        
+        sequences.push_back(imageSequence);
+    }
+
+    if(read.textFrameVec.size() > 0){
+        Sequencer textSequence;
+        textSequence.setup(read.textFrameVec, "text");
+        
+        sequences.push_back(textSequence);
     }
     
-    //Initialize the sequence to one random frame from Model
-    sequence.push_back(&read.frameVec[ofRandom(read.frameVec.size())]);
+    if(read.processFrameVec.size() > 0){
+        Sequencer processSequence;
+        processSequence.setup(read.processFrameVec, "process");
+        
+        sequences.push_back(processSequence);
+    }
     
+    if(read.threeDFrameVec.size() > 0){
+        Sequencer threeDSequence;
+        threeDSequence.setup(read.threeDFrameVec, "3D");
+        
+        sequences.push_back(threeDSequence);
+    }
     
-    //Set up all data to be used for commentary pieces
-//    Use the flocking type as the authorial intent frame...
-//    That could also be when you take a snapshot of the Pattern texture thing.
-//    sequence.push_back(&flock);
+    //Free up memory
+    read.clearVectors();
     
+
+    //CHANGE THIS TO RUN IN THE FRAME SYSTEM
     //Initialize image roulette which will add images scraped from the internet into
     //particle system as a "texture" / fragments in a 3D space
     imgRoulete.setupRoulete();
@@ -68,6 +116,11 @@ void Control::setup(){
     particleAlign = 0;
 }
 
+//Setup Data Screen
+void Control::setupDataScreen(){
+    dataScreen.setup();
+}
+
 void Control::update(){
 
     
@@ -78,21 +131,41 @@ void Control::update(){
     //Until new data is added
     //But not sure....
     
-    if(!currentFrame.animating){
-        startTime = ofGetElapsedTimeMillis();
-        currentFrame.animating = true;
-        
-        for(int i = 0; i < sequence.size();i++){
-            cout << "CURRENT: "+currentFrame.title+" INDEX: "+ofToString(i) << endl;
+    
+    //THIS will all be in a loop of initialized sequences
+    //i.e. checking if sequences[i].currentFrame.animating
+    for(int i = 0; i < sequences.size();i++){
+        if(!sequences[i].currentFrame.animating){
+            sequences[i].startTime = ofGetElapsedTimeMillis(); 
+            sequences[i].currentFrame.animating = true;
+            
+            cout << "CURRENT: "+sequences[i].currentFrame.title+sequences[i].vecType<< endl;
+            
+            loadFrame(&sequences[i]);
+            sequences[i].sequencer();
+        }else{// maybe if getting too much lag with everything happening at load do sequencer half way
+            if(ofGetElapsedTimeMillis() - sequences[i].startTime > sequences[i].currentFrame.totalTime){
+                sequences[i].currentFrame.animating = false;
+            }
         }
         
-        loadFrame();
-        sequencer();
-    }else{// maybe if getting too much lag with everything happening at load do sequencer half way
-        if(ofGetElapsedTimeMillis() - startTime > currentFrame.totalTime){
-            currentFrame.animating = false;
-        }
     }
+
+//    New update logic
+    
+//    For the particle system
+//    I think there will be two states
+//    Either flocking / exploding
+//    Or being/going to position
+//    Maybe flocking is not a frame type but a flag that get triggered by a commentary frame type
+    
+//    Try move sound Manager into load frame
+//    Better place to be becasue then only get called if not animating.
+//    Can probably get rid of the whole is reading thing......
+
+//    Similarly image roulete logic can get called as often as needed through a faster moving image vec.
+    
+    
     
     //Main particle system that is the sort of ACTIVE state
     //which the new frame is loading into.
@@ -107,66 +180,51 @@ void Control::update(){
     //BACKGROUND
     backBurnerSystem.setupForces();
     
+    
+    //Change to two particle system states
+    
+    if(scattering){
         
-        switch(currentFrame.frameType){
-            case 1 : { // Flocking
-
-                //Animate the camera to look at the "leader" particle in the break up of the mesh
-                camLook = ofVec3f(particleSystem[currentFrame.leader].x,particleSystem[currentFrame.leader].y,particleSystem[currentFrame.leader].z);
-
-                for(int i = 0; i < particleSystem.size(); i++) {
-                    BinnedParticle& cur = particleSystem[i];
-                    
-//                    cur.addDampingForce();
-                }
+        //Animate the camera to look at the "leader" particle in the break up of the mesh
+        camLook = ofVec3f(particleSystem[scatterSource].x,particleSystem[scatterSource].y,particleSystem[scatterSource].z);
         
-                //Only apply flocking to a random selection of particles
-                for(int i = MAX(0,currentFrame.leader - 50); i < MIN(particleSystem.size(),currentFrame.leader + 50); i++){
-                    BinnedParticle& cur = particleSystem[i];
-                    vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
-
-                    for(int i = 0; i < neighbors.size(); i++){
-                        cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
-                    }
-
-                    particleSystem.addRepulsionForce(cur, 70, .1);
-                    particleSystem.addAttractionForce(cur, 50, .3);
-
-                }
-
-             //this is causing bugs
-                particleSystem.addAttractionForce(particleSystem[currentFrame.leader], particleNeighborhood+30, .3);
-                
-                break;
-            }
-            case 2 : { // Mesh and Colors in active particle sys
-                
-               camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
-                
-                // Not really using this at the moment
-                //Move to index if not there
-//                for(int i = 0; i < particleSystem.size(); i++) {
-//                    BinnedParticle& cur = particleSystem[i];
-//                    particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
-//                }
-
-                break;
-            }
-            case 3 : { // Mesh draw
-                
-                break;
-            }
-            case 4 : {
-                 camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
-                
-                break;
-            }
-            default :
-                break;
-                
+        for(int i = 0; i < particleSystem.size(); i++) {
+            BinnedParticle& cur = particleSystem[i];
+            
+            //                    cur.addDampingForce();
         }
-    
-    
+        
+        //Only apply flocking to a random selection of particles
+        for(int i = MAX(0,scatterSource - 50); i < MIN(particleSystem.size(),scatterSource + 50); i++){
+            BinnedParticle& cur = particleSystem[i];
+            vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
+            
+            for(int i = 0; i < neighbors.size(); i++){
+                cur.align(neighbors[i]->xv, neighbors[i]->yv, neighbors[i]->zv);
+            }
+            
+            particleSystem.addRepulsionForce(cur, 70, .1);
+            particleSystem.addAttractionForce(cur, 50, .3);
+            
+        }
+        
+        //this is causing bugs
+        particleSystem.addAttractionForce(particleSystem[scatterSource], particleNeighborhood+30, .3);
+        
+    }else{
+        
+        camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
+        
+        // Not really using this at the moment
+        //Move to index if not there
+        //                for(int i = 0; i < particleSystem.size(); i++) {
+        //                    BinnedParticle& cur = particleSystem[i];
+        //                    particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
+        //                }
+        
+        
+    }
+        
     //ACTIVE
     //FOR All states
     for(int i = 0; i < particleSystem.size(); i++) {
@@ -225,8 +283,6 @@ void Control::update(){
     //pass in the history vector as the argument
     
     
-    soundManager.update(&currentFrame);
-    
     
     if(ofGetFrameNum() % 60 == 0){ // && if we are not still adding texture to system
         //get fbo from imgRoulete and draw
@@ -251,258 +307,13 @@ void Control::update(){
 }
 
 
-//Keep only display in here so that can swivel around a static state
+//Draw Particle System Screen
 void Control::draw(){
     particleSystem.draw();
     backBurnerSystem.draw();
-
-    if(currentFrame.mesh.getVertices().size() > 0 && currentFrame.renderMesh){
-        currentFrame.mesh.drawWireframe();
-    }
-    
 }
 
-bool compareByWeight(const frame &a, const frame &b){
-    return a.weight > b.weight;
-}
-
-bool in_array(const std::string &value, const std::vector<string> &array){
-    return std::find(array.begin(), array.end(), value) != array.end();
-}
-
-//A sequencer of the content that is a weighted random choice based off of tags
-//i.e. loose association to the current frame
-void Control::sequencer(){
-    
-    for(int i = 0; i < read.frameVec.size(); i++){
-        float w = read.frameVec[i].weight;
-        w *= 0.1;
-        
-        for(int j = 0; j < read.frameVec[i].tags.size(); j++){
-            if(read.frameVec[i].uID != currentFrame.uID){
-                if(in_array(read.frameVec[i].tags[j],currentFrame.tags)){
-                    
-                    w += 1/float(currentFrame.tags.size());
-                    
-                }
-            }
-        }
-    
-        read.frameVec[i].weight = MIN(w,1);
-
-    }
-    
-    ofSort(read.frameVec, &compareByWeight);
-    
-     for(int i = 0; i < read.frameVec.size(); i++){
-         cout << read.frameVec[i].title ;
-         cout << ": "+ofToString(read.frameVec[i].weight) << endl;
-     }
-    
-    //Randomly choose from the first quarter of strongest weighted frames
-    int weightedRandom = ofRandom(ceil(read.frameVec.size()/2));
-    if(read.frameVec[weightedRandom].uID == currentFrame.uID) weightedRandom ++; //leave in just in case get repetition
-    sequence.push_front(&read.frameVec[weightedRandom]);
-    
-    sequence.pop_back();
-    
-}
-
-
-
-void Control::shiftFrame(){
-    
-    //Add in a function that removes end and adds new from data
-    sequence.pop_back();
-    
-    loadFrame();
-}
-
-
-//Storing the latest data in a "current Frame" so that there is an additive effect,
-//old data stays on Data Screen
-//Also images/meshes are not saved in memory but re-loaded when needed
-void Control::loadFrame(){
-    
-    //Assume all frames will have this basic data
-    currentFrame.uID = sequence.back()->uID;
-    currentFrame.frameType = sequence.back()->frameType;
-    currentFrame.weight = sequence.back()->weight;
-    currentFrame.tags = sequence.back()->tags;
-    currentFrame.totalTime = sequence.back()->totalTime;
-    
-    currentFrame.collection = sequence.back()->collection;
-    currentFrame.collectionDesc = sequence.back()->collectionDesc;
-//    int encounterDate;
-//    float encounterLocLong;
-//    float encounterLocLat;
-    currentFrame.author = sequence.back()->author;
-    currentFrame.citation = sequence.back()->citation;
-    
-    currentFrame.title = sequence.back()->title;
-    currentFrame.desc = sequence.back()->desc;
-    currentFrame.material = sequence.back()->material;
-    currentFrame.historyVec = sequence.back()->historyVec;
-    currentFrame.currentHistoryIndex = -1;
-    
-    
-    switch(currentFrame.frameType){
-        case 1 : { // Flocking
-            
-            if(particleSystem.size() == 0){
-                
-                shiftFrame();
-                
-            }else { //if(currentFrame.leader == -1)
-                currentFrame.leader = ofRandom(0,particleSystem.size());
-            }
-            
-            break;
-        }
-        case 2 : { // Mesh and Colors
-
-            //Boolean to draw full mesh in addition to particle sys version
-            currentFrame.renderMesh = sequence.back()->renderMesh;
-            
-//            ofVec3f totalPos;
-//
-//            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
-//                totalPos += currentFrame.mesh.getVertex(i);
-//            }
-            
-//            camLook = totalPos/currentFrame.mesh.getVertices().size();
-            
-            //I think randomParticle is better, just need to debug.
-            
-            currentFrame.mesh = read.readMesh("meshes/"+sequence.back()->externalFileName);
-            
-            addMeshToParticleSys();
-            
-            //For camera to look at
-            randParticle = ofRandom(particleSystem.size());
-            
-            break;
-        }
-        case 3 : { // Mesh
-//            currentFrame.mesh = sequence.back()->mesh;
-//            currentFrame.renderMesh = sequence.back()->renderMesh;
-            
-            break;
-        }
-        case 4 : { // Texture
-            
-            //Create and dispose of delaunay iamge here
-            DelaunayImage del;
-            
-            currentFrame.image = read.readImage("textures/"+sequence.back()->externalFileName);
-            
-            camLook = ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2);
-            
-            currentFrame.mesh = del.triangulateImage(currentFrame.image);
-            
-            addMeshToParticleSys();
-            
-            //For camera to look at
-            randParticle = ofRandom(particleSystem.size());
-            
-            break;
-        }
-        case 5 : { // Text
-            //If it's only text based, let the sound keep playing in the background?
-            currentFrame.totalTime = 500;
-            
-            if(sequence.back()->externalFileName != "" && (sequence.back()->externalFileName.find(".png") != std::string::npos || sequence.back()->externalFileName.find(".jpg") != std::string::npos || sequence.back()->externalFileName.find(".jpeg") != std::string::npos)){
-                currentFrame.image = read.readImage("images/"+sequence.back()->externalFileName);
-            }
-            
-            break;
-        }
-        default : {
-            //error handling if an incomplete json file ends up in data
-            cout << "Unrecognized Frame Type" << endl;
-            //Dispose of frame and continue with deque in next call to update
-            shiftFrame();
-            
-            break;
-        }
-            
-    }
-    
-    
-    if(currentFrame.historyVec.size() > 0){
-        for(int i = 0; i < currentFrame.historyVec.size(); i ++){
-            int timeAprox = int(currentFrame.historyVec[i].text.length()*70);
-            
-            currentFrame.historyVec[i].length = timeAprox;
-            
-            //Do this in case the text is very long??
-            currentFrame.totalTime += timeAprox;
-        }
-    }
-    
-    
-    dataScreen.loadData(currentFrame);
-    
-}
-
-
-void Control::addMeshToParticleSys(){
-    
-    for(int i = 0; i < currentFrame.mesh.getVertices().size();i++){
-        currentFrame.mesh.setVertex(i, currentFrame.mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2));
-    }
-    
-    
-    vector<BinnedParticle> tempVec = particleSystem.getParticles();;
-    for(int i = 0; i < tempVec.size(); i++ ){
-        backBurnerSystem.add(tempVec[i]);
-    }
-    
-    particleSystem.clear();
-    
-    
-    for (int i = 0; i < currentFrame.mesh.getIndices().size()-3; i+=3){
-        
-        
-        //Rather than having random positioning
-        //get a previous particle position that is being loaded out of the system and if
-        //size() is large add random.
-        
-//        float x = ofRandom(0, cubeResolution) ;
-//        float y = ofRandom(0, cubeResolution) ;
-//        float z = ofRandom(0, cubeResolution) ;
-//        BinnedParticle particle(x, y, z, 0, 0, 0);
-        
-        ofVec3f t = currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i));
-        
-        BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
-        
-        particle.setTarget(t.x,t.y,t.z);
-        
-        ofVec3f diff1 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+1));
-        ofVec3f diff2 = t - currentFrame.mesh.getVertex( currentFrame.mesh.getIndex(i+2));
-        
-        particle.p1 = diff1;
-        particle.p2 = diff2;
-        
-        particle.targetColor = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i));
-        particle.p1Color = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+1));
-        particle.p2Color  = currentFrame.mesh.getColor( currentFrame.mesh.getIndex(i+2));
-        
-        particleSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
-        
-    }
-    
-}
-
-
-//Add in more secondScreen data draw functions here
-
-void Control::setupDataScreen(){
-    dataScreen.setup();
-    
-}
-
+//Draw Data Screen
 void Control::drawDataScreen(){
     
     dataScreen.draw();
@@ -514,6 +325,184 @@ void Control::drawDataScreen(){
     ofDrawBitmapString(ofToString((int) (ofGetElapsedTimeMillis() - startTime)) + " millis",32,92);
 }
 
+//Storing the latest data in a "current Frame" so that there is an additive effect,
+//old data stays on Data Screen
+//Also images/meshes are not saved in memory but re-loaded when needed
+void Control::loadFrame(Sequencer * s){
+    
+    s->resetCurrentFrame();
+    
+    scattering = false;
+
+    switch(s->currentFrame.frameType){
+        case 1 : { // Process
+            scattering = true;
+            
+            if(particleSystem.size() == 0){//Old error???
+                
+                s->sequencer();
+                loadFrame(s);
+                
+            }else { //if(scatterSource == -1)
+                scatterSource = ofRandom(0,particleSystem.size());
+            }
+            
+            break;
+        }
+        case 2 : { // Mesh and Colors
+
+            
+//            ofVec3f totalPos;
+//
+//            for(int i = 0; i < currentFrame.mesh.getVertices().size(); i ++){
+//                totalPos += currentFrame.mesh.getVertex(i);
+//            }
+            
+//            camLook = totalPos/currentFrame.mesh.getVertices().size();
+            
+            //I think randomParticle is better, just need to debug.
+            
+            s->currentFrame.mesh = read.readMesh("meshes/"+s->currentFrame.externalFileName);
+            
+            addMeshToParticleSys(s->currentFrame.mesh);
+            
+            //For camera to look at
+            randParticle = ofRandom(particleSystem.size());
+            
+            break;
+        }
+        case 3 : { // Image
+//            currentFrame.mesh = sequence.back()->mesh;
+//            currentFrame.renderMesh = sequence.back()->renderMesh;
+            
+            break;
+        }
+        case 4 : { // Texture
+            
+            //Create and dispose of delaunay iamge here
+            DelaunayImage del;
+            
+            s->currentFrame.image = read.readImage("textures/"+s->currentFrame.externalFileName);
+            
+            camLook = ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2);
+            
+            s->currentFrame.mesh = del.triangulateImage(s->currentFrame.image);
+            
+            addMeshToParticleSys(s->currentFrame.mesh);
+            
+            //For camera to look at
+            randParticle = ofRandom(particleSystem.size());
+            
+            break;
+        }
+        case 5 : { // Text
+            //If it's only text based, let the sound keep playing in the background?
+            s->currentFrame.totalTime = 500;
+            
+            if(s->currentFrame.externalFileName != "" && (s->currentFrame.externalFileName.find(".png") != std::string::npos || s->currentFrame.externalFileName.find(".jpg") != std::string::npos || s->currentFrame.externalFileName.find(".jpeg") != std::string::npos)){
+                s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
+            }
+            
+            break;
+        }
+        default : {
+            //error handling if an incomplete json file ends up in data
+            cout << "Unrecognized Frame Type" << endl;
+            //Dispose of frame and continue with deque in next call to update
+            s->sequencer();
+            loadFrame(s);
+            break;
+        }
+            
+    }
+    
+    if(s->currentFrame.historyVec.size() > 0){
+        for(int i = 0; i < s->currentFrame.historyVec.size(); i ++){
+            int timeAprox = int(s->currentFrame.historyVec[i].text.length()*70);
+            
+            s->currentFrame.historyVec[i].length = timeAprox;
+            
+            //Do this in case the text is very long??
+            s->currentFrame.totalTime += timeAprox;
+        }
+    }
+    
+    //Also maybe better to separate soundManager into text read and sound play
+    soundManager.update(&s->currentFrame); //Will this allow overlapping? probably not... could strip down
+    dataScreen.loadData(s->currentFrame);
+}
+
+
+void Control::addMeshToParticleSys(ofMesh mesh){
+    
+    for(int i = 0; i < mesh.getVertices().size();i++){
+        mesh.setVertex(i, mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2));
+    }
+    
+    
+    vector<BinnedParticle> tempVec = particleSystem.getParticles();;
+    for(int i = 0; i < tempVec.size(); i++ ){
+        backBurnerSystem.add(tempVec[i]);
+    }
+    
+    particleSystem.clear();
+    
+    
+    for (int i = 0; i < mesh.getIndices().size()-3; i+=3){
+        
+        
+        //Rather than having random positioning
+        //get a previous particle position that is being loaded out of the system and if
+        //size() is large add random.
+        
+//        float x = ofRandom(0, cubeResolution) ;
+//        float y = ofRandom(0, cubeResolution) ;
+//        float z = ofRandom(0, cubeResolution) ;
+//        BinnedParticle particle(x, y, z, 0, 0, 0);
+        
+        ofVec3f t = mesh.getVertex( mesh.getIndex(i));
+        
+        BinnedParticle particle(t.x, t.y, t.z, 0, 0, 0);
+        
+        particle.setTarget(t.x,t.y,t.z);
+        
+        ofVec3f diff1 = t - mesh.getVertex( mesh.getIndex(i+1));
+        ofVec3f diff2 = t - mesh.getVertex( mesh.getIndex(i+2));
+        
+        particle.p1 = diff1;
+        particle.p2 = diff2;
+        
+        particle.targetColor = mesh.getColor( mesh.getIndex(i));
+        particle.p1Color = mesh.getColor( mesh.getIndex(i+1));
+        particle.p2Color  = mesh.getColor( mesh.getIndex(i+2));
+        
+        particleSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
+        
+    }
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//MOVE THIS TO WRITE
 void Control::exportPLY(){
     frame temp;
     

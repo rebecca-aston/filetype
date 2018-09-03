@@ -6,13 +6,12 @@
 struct frame {
     
     //initialize with values for logic checks later
-    frame(int i = 0, int f = -1, bool a = false, bool rM = false, int t = -1, int l = -1, int hI = -1){
+    frame(string i = "", int f = -1, bool a = false, bool rM = false, int t = -1, int hI = -1){
         uID = i;
         frameType = f;
         animating = a;
         renderMesh = rM;
         totalTime = t;
-        leader = l;
         currentHistoryIndex = hI;
     }
     
@@ -39,7 +38,7 @@ struct frame {
     int currentHistoryIndex;
     
     //programmatic stuff
-    int uID;
+    string uID;
     bool animating;
     bool renderMesh;
     
@@ -52,7 +51,7 @@ struct frame {
     ofMesh mesh;
     ofImage image;
     
-    int leader; //Flocking
+
     int newActiveP;
     
     vector< BinnedParticle > particles;
