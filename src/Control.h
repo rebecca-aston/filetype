@@ -41,7 +41,7 @@ protected:
     Read read;
     Write write;
     
-//    frame flock;
+    frame scatter;
     
     SoundManager soundManager;
     
@@ -56,9 +56,12 @@ public:
     void update();
     void loadFrame(Sequencer * sequence); 
     void addMeshToParticleSys(ofMesh mesh);
+    void addMeshToBackBurnerSys(ofMesh mesh);
     
     void setupDataScreen();
     void drawDataScreen();
+    
+    Sequencer* getSequenceByType(string t);
     
     void exportPLY();
     

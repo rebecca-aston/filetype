@@ -21,103 +21,75 @@ void DataScreen::setup(){
 void DataScreen::draw(){
     ofBackground(0);
     
-    for(int i = 0; i < drawFrames.size();i ++){
-        
-        if(font.isLoaded()){
-            
-            int marginX = ofGetWidth()/2;
-            int lineY = ofGetHeight()/2;
-            
-//            font.drawString(drawFrames[i].collection, centerScreen-(font.stringWidth(drawFrames[i].collection)/2), newLine);
-//            newLine += lineHeight;
+    drawSection(imageFrame, 0, ofGetHeight()/2, colWidth, colWidth);
 
-            
-            font.drawString(wrapString(drawFrames[i].collection,colWidth),marginX,lineY);
-            lineY += font.stringHeight(wrapString(drawFrames[i].collection,colWidth))+6;
-            font.drawString(wrapString(drawFrames[i].title,colWidth), marginX, lineY);
-        
+    drawSection(meshFrame, 0, 0, colWidth, colWidth);
 
-            switch(drawFrames[i].frameType){
-                case 1 : { // Process
+    drawSection(textFrame, ofGetWidth()/2, 0, colWidth, colWidth);
 
+    
+}
 
-                    break;
-                }
-                case 2 : { // Mesh
-                    drawFrames[i].mesh.drawFaces();
-                    cout << "HERE" << endl;
-                    break;
-                }
-                case 3 : { // image
-
-                    //Special Roulete case
-    //                if(currentFrame.image.isAllocated()){
-    //                    ofPushMatrix();
-    //                    //            ofScale(.5, .5);
-    //                    currentFrame.image.draw(0,0);
-    //                    ofPopMatrix();
-    //                }
-
-
-
-                    break;
-                }
-                case 4 : { // Texture
-                    if(drawFrames[i].image.isAllocated()){
-                        ofPushMatrix();
-                        //            ofScale(.5, .5);
-                        drawFrames[i].image.draw(0,0);
-                        ofPopMatrix();
-                    }
-
-                    break;
-                }
-                case 5 : { // Text
-                    if(drawFrames[i].image.isAllocated()){
-                        ofPushMatrix();
-                        //            ofScale(.5, .5);
-                        drawFrames[i].image.draw(ofGetWidth()/2,0);
-                        ofPopMatrix();
-                    }
-
-                    break;
-                }
-            }
-        }
+void DataScreen::drawSection(frame f, float x, float y, float colW, float colH){
+    
+    float imgPadding = 0;
+    float textPadding = 10;
+    
+    ofPushMatrix();
+    ofPushStyle();
+    
+    ofTranslate(x,y);
+    
+    ofPushStyle();
+    ofSetColor(0);//Set to color to debug
+    ofDrawRectangle(0,0,colW,colH);
+    ofPopStyle();
+    
+    if(f.image.isAllocated()){
+        scaleImageSquare(f.image, colW, imgPadding);
     }
     
-    if(rouleteImage.isAllocated()){
-        //scale it correctly
-        float scaleW = colWidth/rouleteImage.getWidth();
-        float scaleH = colWidth/rouleteImage.getHeight();
-        
-        ofPushMatrix();
-        
-        ofTranslate(imgSectionOrigin.x, imgSectionOrigin.y);
-        
-        if(rouleteImage.getWidth()>rouleteImage.getHeight()){
-            ofPushMatrix();
-            ofScale(scaleW,scaleW);
-//            rouleteImage.draw(imgSectionOrigin.x, imgSectionOrigin.y+(colWidth-(rouleteImage.getHeight()*scaleW))/2);
-            rouleteImage.draw(0, (colWidth-rouleteImage.getHeight()*scaleW)/2);
-            ofPopMatrix();
-        }else{
-            ofPushMatrix();
-            ofScale(scaleH,scaleH);
-//            rouleteImage.draw(imgSectionOrigin.x+(colWidth-(rouleteImage.getWidth()*scaleH))/2,imgSectionOrigin.y );
-            rouleteImage.draw((colWidth-rouleteImage.getWidth()*scaleH)/2,0);
-            ofPopMatrix();
-        }
- 
-        
-        ofSetColor(0,0,255);
-        ofNoFill();
-        ofSetLineWidth(2);
-        ofDrawRectangle(0, 0, colWidth, colWidth);
-        ofPopMatrix();
-        
-    }
+    ofPushStyle();
+    ofSetColor(0,0,255);
+    ofNoFill();
+    ofSetLineWidth(2);
+    ofDrawRectangle(0, 0, colWidth, colWidth);
+    ofPopStyle();
     
+    
+//    if(font.isLoaded()){
+//
+//        int marginX = ofGetWidth()/2;
+//        int lineY = ofGetHeight()/2;
+//
+//
+//        font.drawString(wrapString(drawFrames[i].collection,colWidth),marginX,lineY);
+//        lineY += font.stringHeight(wrapString(drawFrames[i].collection,colWidth))+6;
+//        font.drawString(wrapString(drawFrames[i].title,colWidth), marginX, lineY);
+//    }
+    
+    
+    ofPopStyle();
+    ofPopMatrix();
+    
+}
+
+void DataScreen::scaleImageSquare(ofImage img, float size, float padding){
+    ofPushMatrix();
+    ofPushStyle();
+    size = size-padding*2;
+    ofTranslate(size/2,size/2);
+    if(img.getWidth()>img.getHeight() || img.getWidth() == img.getHeight()){
+        float scaleW = size/img.getWidth();
+        ofScale(scaleW,scaleW);
+    }else{
+        float scaleH = size/img.getHeight();
+        ofScale(scaleH,scaleH);
+    }
+    img.setAnchorPoint(img.getWidth()/2, img.getHeight()/2);
+    img.draw(padding,padding);
+    ofPopStyle();
+    ofPopMatrix();
 }
 
 //https://forum.openframeworks.cc/t/text-wrapping/2953
@@ -130,7 +102,7 @@ string DataScreen::wrapString(string text, int width) {
     for(int i=0; i<words.size(); i++) {
         
         string wrd = words[i];
-        cout << wrd << endl;
+//        cout << wrd << endl;
         
         tempString += wrd + " ";
         int stringwidth = font.stringWidth(tempString);
@@ -152,15 +124,30 @@ void DataScreen::drawImageRoulette(ofImage i){
 }
 
 void DataScreen::loadData(frame current){
-    cout << current.frameType << endl;
-    cout << current.collection << endl;
-    removeFrame(current.frameType);
-    drawFrames.push_back(current);
+//    cout << current.frameType << endl;
+//    cout << current.collection << endl;
+//    removeFrame(current.frameType);
+//    drawFrames.push_back(current);
+    
+//    Process frame?
+    
+    if(current.frameType == 2 || current.frameType == 4 ){
+        meshFrame = current;
+    }
+    
+    if(current.frameType == 3 ){
+        imageFrame = current;
+    }
+    
+    if(current.frameType == 5 ){
+        textFrame = current;
+    }
+    
 }
 
-void DataScreen::removeFrame(int t){
-    for(int i = 0; i < drawFrames.size();i++){
-        if(drawFrames[i].frameType == t) drawFrames.erase(drawFrames.begin()+i);
-    }
-}
+//void DataScreen::removeFrame(int t){
+//    for(int i = 0; i < drawFrames.size();i++){
+//        if(drawFrames[i].frameType == t) drawFrames.erase(drawFrames.begin()+i);
+//    }
+//}
 

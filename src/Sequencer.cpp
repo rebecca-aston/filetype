@@ -32,31 +32,52 @@ void Sequencer::update(){
 
 void Sequencer::resetCurrentFrame(){
     
-    currentFrame.uID = frameVec[weightedRandom].uID;
-    currentFrame.frameType = frameVec[weightedRandom].frameType;
-    currentFrame.weight = frameVec[weightedRandom].weight;
-    currentFrame.tags = frameVec[weightedRandom].tags;
-    currentFrame.totalTime = frameVec[weightedRandom].totalTime;
-    currentFrame.externalFileName = frameVec[weightedRandom].externalFileName;
-    
-    currentFrame.collection = frameVec[weightedRandom].collection;
-    currentFrame.collectionDesc = frameVec[weightedRandom].collectionDesc;
-    //    int encounterDate;
-    //    float encounterLocLong;
-    //    float encounterLocLat;
-    currentFrame.author = frameVec[weightedRandom].author;
-    currentFrame.citation = frameVec[weightedRandom].citation;
-    
-    currentFrame.title = frameVec[weightedRandom].title;
-    currentFrame.desc = frameVec[weightedRandom].desc;
-    currentFrame.material = frameVec[weightedRandom].material;
-    
-    currentFrame.historyVec = frameVec[weightedRandom].historyVec;
-
-    
-    currentFrame.currentHistoryIndex = -1;
+    if(!forcedFrame){//If using weighted random choice load from vector
+        currentFrame.uID = frameVec[weightedRandom].uID;
+        currentFrame.frameType = frameVec[weightedRandom].frameType;
+        currentFrame.weight = frameVec[weightedRandom].weight;
+        currentFrame.tags = frameVec[weightedRandom].tags;
+        currentFrame.totalTime = frameVec[weightedRandom].totalTime;
+        currentFrame.externalFileName = frameVec[weightedRandom].externalFileName;
+        
+        currentFrame.collection = frameVec[weightedRandom].collection;
+        currentFrame.collectionDesc = frameVec[weightedRandom].collectionDesc;
+        //    int encounterDate;
+        //    float encounterLocLong;
+        //    float encounterLocLat;
+        currentFrame.author = frameVec[weightedRandom].author;
+        currentFrame.citation = frameVec[weightedRandom].citation;
+        
+        currentFrame.title = frameVec[weightedRandom].title;
+        currentFrame.desc = frameVec[weightedRandom].desc;
+        currentFrame.material = frameVec[weightedRandom].material;
+        
+        currentFrame.historyVec = frameVec[weightedRandom].historyVec;
+        
+        
+        currentFrame.currentHistoryIndex = -1;
+    }else{//else if using "curated" frame re-set boolean which is set when new frame forced
+        forcedFrame = false;
+    }
     
 }
+
+
+//Add to queue function....
+//So that if there is a temporary frame that is being added it doesn't enter into circulation for ever
+//it forces the current particles into backburner... 
+
+void Sequencer::forceNewFrame(frame f, int fType){ 
+
+    //Boolean to skip the use of weighted random sequencer
+    forcedFrame = true;
+    currentFrame = f;
+    currentFrame.frameType = fType;
+
+    currentFrame.animating = true;
+    
+}
+
 
 
 bool compareByWeight(const frame &a, const frame &b){
@@ -71,35 +92,36 @@ bool in_array(const std::string &value, const std::vector<string> &array){
 //i.e. loose association to the current frame
 void Sequencer::sequencer(){
     
-    for(int i = 0; i < frameVec.size(); i++){
-        float w = frameVec[i].weight;
-        w *= 0.1;
-        
-        for(int j = 0; j < frameVec[i].tags.size(); j++){
-            if(frameVec[i].uID != currentFrame.uID){
-                if(in_array(frameVec[i].tags[j],currentFrame.tags)){
-                    
-                    w += 1/float(currentFrame.tags.size());
-                    
+    if(!forcedFrame){
+        for(int i = 0; i < frameVec.size(); i++){
+            float w = frameVec[i].weight;
+            w *= 0.1;
+            
+            for(int j = 0; j < frameVec[i].tags.size(); j++){
+                if(frameVec[i].uID != currentFrame.uID){
+                    if(in_array(frameVec[i].tags[j],currentFrame.tags)){
+                        
+                        w += 1/float(currentFrame.tags.size());
+                        
+                    }
                 }
             }
-        }
-    
-        frameVec[i].weight = MIN(w,1);
+        
+            frameVec[i].weight = MIN(w,1);
 
+        }
+        
+        ofSort(frameVec, &compareByWeight);
+        
+    //     for(int i = 0; i < frameVec.size(); i++){
+    //         cout << frameVec[i].title ;
+    //         cout << ": "+ofToString(frameVec[i].weight) << endl;
+    //     }
+        
+        //Randomly choose from the first quarter of strongest weighted frames
+        weightedRandom = ofRandom(ceil(frameVec.size()/2));
+        if(frameVec[weightedRandom].uID == currentFrame.uID) weightedRandom ++; //leave in just in case get repetition
     }
-    
-    ofSort(frameVec, &compareByWeight);
-    
-//     for(int i = 0; i < frameVec.size(); i++){
-//         cout << frameVec[i].title ;
-//         cout << ": "+ofToString(frameVec[i].weight) << endl;
-//     }
-    
-    //Randomly choose from the first quarter of strongest weighted frames
-    weightedRandom = ofRandom(ceil(frameVec.size()/2));
-    if(frameVec[weightedRandom].uID == currentFrame.uID) weightedRandom ++; //leave in just in case get repetition
-    
 }
 
 

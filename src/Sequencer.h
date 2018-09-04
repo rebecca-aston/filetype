@@ -15,7 +15,7 @@
 class Sequencer {
 protected:
 
-    
+    bool forcedFrame;
    
 public: 
     Sequencer();
@@ -24,6 +24,7 @@ public:
     void update();
     
     void resetCurrentFrame();
+    void forceNewFrame(frame f,int fType);
     void sequencer();
     
     string vecType;

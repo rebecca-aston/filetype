@@ -10,12 +10,9 @@ class DelaunayImage {
 public:
     DelaunayImage();
     
-    ofMesh triangulateImage(ofImage img);
+    ofMesh triangulateImage(ofImage img, bool isVertical, float cubeResolution); 
 	void draw();
     vector <ofPoint> getTriangle(int i);
-    
-    void setupRoulete();
-    ofImage processImage();
 
 	ofxCvColorImage image;
 
@@ -29,7 +26,6 @@ public:
     ofxDelaunay triangulation;
     
     ofDirectory imageDirectory;
-    bool addTextureToSystem;
-    int scale;
+
 };
 

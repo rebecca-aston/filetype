@@ -17,12 +17,20 @@ protected:
     ofTrueTypeFont font;
     
     ofImage rouleteImage;
-    vector<frame> drawFrames;
+//    vector<frame> drawFrames;
+    
+    frame imageFrame;
+    frame textFrame;
+    frame meshFrame;
     
     ofCamera cam;
     
-    int colWidth;
+    float colWidth;
     ofVec2f imgSectionOrigin;
+    
+    void drawSection(frame f, float x, float y, float colW, float colH);
+    void scaleImageSquare(ofImage img, float size, float padding);
+    void removeFrame(int t);
     
 public:
     DataScreen();
@@ -32,9 +40,10 @@ public:
     
     string wrapString(string text, int width);
     
+    
     void drawImageRoulette(ofImage i);
     void loadData(frame current);
-    void removeFrame(int t);
+   
 
 };
 

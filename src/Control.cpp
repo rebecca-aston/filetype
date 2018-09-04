@@ -17,8 +17,8 @@ void Control::setup(){
     //    Use the flocking type as the authorial intent frame...
     //    That could also be when you take a snapshot of the Pattern texture thing.
     //    sequence.push_back(&flock);
-//    flock.frameType = 1;
-//    flock.totalTime = 10000;
+    scatter.frameType = 1;
+    scatter.totalTime = 20000;
     
     //Set up all data to be used for historical / raw data
     read.readModel();
@@ -55,10 +55,6 @@ void Control::setup(){
     read.clearVectors();
     
 
-    //CHANGE THIS TO RUN IN THE FRAME SYSTEM
-    //Initialize image roulette which will add images scraped from the internet into
-    //particle system as a "texture" / fragments in a 3D space
-    imgRoulete.setupRoulete();
     
     //Data Screen and Sound Manager do not need to be initialized.
     
@@ -100,8 +96,18 @@ void Control::update(){
             
             cout << "CURRENT: "+sequences[i].currentFrame.title+sequences[i].vecType<< endl;
             
-            loadFrame(&sequences[i]);
+            //Every other frame in the mesh field, add a scatter frame
+            if(sequences[i].vecType == "3D" && !scattering){
+//                scattering = true;
+                sequences[i].forceNewFrame(scatter, 1); //Scaterring type
+            }
+//            else if(sequences[i].vecType == "3D" ){
+//                scattering = false;
+//            }
+            
             sequences[i].sequencer();
+            loadFrame(&sequences[i]);
+            
         }else{// maybe if getting too much lag with everything happening at load do sequencer half way
             if(ofGetElapsedTimeMillis() - sequences[i].startTime > sequences[i].currentFrame.totalTime){
                 sequences[i].currentFrame.animating = false;
@@ -132,18 +138,18 @@ void Control::update(){
     //Change to two particle system states
     
     if(scattering){
-        
+
         //Animate the camera to look at the "leader" particle in the break up of the mesh
-        camLook = ofVec3f(particleSystem[scatterSource].x,particleSystem[scatterSource].y,particleSystem[scatterSource].z);
+        camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
         
-        for(int i = 0; i < particleSystem.size(); i++) {
-            BinnedParticle& cur = particleSystem[i];
-            
-            //                    cur.addDampingForce();
-        }
+//        for(int i = 0; i < particleSystem.size(); i++) {
+//            BinnedParticle& cur = particleSystem[i];
+//
+//            //                    cur.addDampingForce();
+//        }
         
         //Only apply flocking to a random selection of particles
-        for(int i = MAX(0,scatterSource - 50); i < MIN(particleSystem.size(),scatterSource + 50); i++){
+        for(int i = MAX(0,randParticle - 100); i < MIN(particleSystem.size(),randParticle + 100); i++){
             BinnedParticle& cur = particleSystem[i];
             vector<BinnedParticle*> neighbors = particleSystem.getNeighbors(cur,60);
             
@@ -157,7 +163,7 @@ void Control::update(){
         }
         
         //this is causing bugs
-        particleSystem.addAttractionForce(particleSystem[scatterSource], particleNeighborhood+30, .3);
+        particleSystem.addAttractionForce(particleSystem[randParticle], particleNeighborhood+30, .3);
         
     }else{
         
@@ -231,26 +237,7 @@ void Control::update(){
     //Move all this into the sound manager
     //pass in the history vector as the argument
     
-    
-    
-    if(ofGetFrameNum() % 60 == 0){ // && if we are not still adding texture to system
-        //get fbo from imgRoulete and draw
-        
-        ofImage iR = imgRoulete.processImage();
-        dataScreen.drawImageRoulette(iR);
-        if(imgRoulete.addTextureToSystem){
-            //Get mesh that has been generated 
-            //Create new frame of type mesh
-            
-            //Jump into sequencer to push frame on back/next
-            //maybe wait for end of animation to set imgRoulete.addTextureToSystem to false again
-            
-//            cout << "ADDED TO PARTICLE SYSTEM" << endl;
-            
-            
-        }
-        
-    }
+
     
     
 }
@@ -281,11 +268,9 @@ void Control::loadFrame(Sequencer * s){
     
     s->resetCurrentFrame();
     
-    scattering = false;
-
     switch(s->currentFrame.frameType){
         case 1 : { // Process
-            scattering = true;
+          
             
             if(particleSystem.size() == 0){//Old error???
                 
@@ -293,25 +278,42 @@ void Control::loadFrame(Sequencer * s){
                 loadFrame(s);
                 
             }else { //if(scatterSource == -1)
-                scatterSource = ofRandom(0,particleSystem.size());
+                
+                scattering = true;
             }
             
             break;
         }
         case 2 : { // Mesh and Colors
             
-            s->currentFrame.mesh = read.readMesh("meshes/"+s->currentFrame.externalFileName);
             
+            if(s->currentFrame.uID.find("3D") != std::string::npos){
+                s->currentFrame.mesh = read.readMesh("meshes/"+s->currentFrame.externalFileName);
+            }
+      
             addMeshToParticleSys(s->currentFrame.mesh);
             
             //For camera to look at
             randParticle = ofRandom(particleSystem.size());
             
+            scattering = false;
             break;
         }
         case 3 : { // Image
 //            currentFrame.mesh = sequence.back()->mesh;
 //            currentFrame.renderMesh = sequence.back()->renderMesh;
+            s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
+            
+            if(ofRandom(1)>0.95){
+                DelaunayImage del01;
+                s->currentFrame.mesh = del01.triangulateImage(s->currentFrame.image,false,cubeResolution);
+                
+                s->currentFrame.totalTime = 3000; //SLow the image from moving off?
+                
+//                Sequencer * s3D = getSequenceByType("3D");
+//                s3D->forceNewFrame(s->currentFrame,2); //returns a pointer
+                addMeshToBackBurnerSys(s->currentFrame.mesh);
+            }
             
             break;
         }
@@ -320,13 +322,16 @@ void Control::loadFrame(Sequencer * s){
             //Create and dispose of delaunay iamge here
             DelaunayImage del;
             s->currentFrame.image = read.readImage("textures/"+s->currentFrame.externalFileName);
-            s->currentFrame.mesh = del.triangulateImage(s->currentFrame.image);
+            s->currentFrame.mesh = del.triangulateImage(s->currentFrame.image,true,cubeResolution);
+            
+            cout << s->currentFrame.mesh.getVertices().size() << endl;
             
             addMeshToParticleSys(s->currentFrame.mesh);
             
             //For camera to look at
             randParticle = ofRandom(particleSystem.size());
             
+            scattering = false;
             break;
         }
         case 5 : { // Text
@@ -388,16 +393,6 @@ void Control::addMeshToParticleSys(ofMesh mesh){
     
     for (int i = 0; i < mesh.getIndices().size()-3; i+=3){
         
-        
-        //Rather than having random positioning
-        //get a previous particle position that is being loaded out of the system and if
-        //size() is large add random.
-        
-//        float x = ofRandom(0, cubeResolution) ;
-//        float y = ofRandom(0, cubeResolution) ;
-//        float z = ofRandom(0, cubeResolution) ;
-//        BinnedParticle particle(x, y, z, 0, 0, 0);
-        
         ofVec3f t = mesh.getVertex( mesh.getIndex(i));
         
         BinnedParticle particle(t.x+ofRandom(-50,50), t.y+ofRandom(-50,50), t.z+ofRandom(-50,50), 0, 0, 0);
@@ -420,8 +415,35 @@ void Control::addMeshToParticleSys(ofMesh mesh){
     
 }
 
+//To initialize straight to backburner
+void Control::addMeshToBackBurnerSys(ofMesh mesh){
+    
+    for (int i = 0; i < mesh.getIndices().size()-3; i+=3){
+        
+        ofVec3f t = mesh.getVertex( mesh.getIndex(i));
+        
+        BinnedParticle particle(t.x+ofRandom(-200,200),t.y+ofRandom(-200,200),t.z+ofRandom(-200,200), 0, 0, 0);
+        
+        ofVec3f diff1 = t - mesh.getVertex( mesh.getIndex(i+1));
+        ofVec3f diff2 = t - mesh.getVertex( mesh.getIndex(i+2));
+        
+        particle.p1 = diff1;
+        particle.p2 = diff2;
+        
+        particle.targetColor = mesh.getColor( mesh.getIndex(i));
+        particle.p1Color = mesh.getColor( mesh.getIndex(i+1));
+        particle.p2Color  = mesh.getColor( mesh.getIndex(i+2));
+        
+        backBurnerSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
+        
+    }
+}
 
-
+Sequencer* Control::getSequenceByType(string t){
+    for(int i = 0; i < sequences.size();i++){
+        if(sequences[i].vecType == t) return &sequences[i];
+    }
+}
 
 
 

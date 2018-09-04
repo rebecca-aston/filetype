@@ -33,6 +33,7 @@ void Read::readModel(){
                     threeDFrameVec.push_back(tempVec[j]);
                 }
                 if(tempVec[j].frameType == 3){//image
+                    tempVec[j].totalTime = 500;
                     imageFrameVec.push_back(tempVec[j]);
                 }
                 if(tempVec[j].frameType == 5){//text

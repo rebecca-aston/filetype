@@ -65,7 +65,7 @@ void ofApp::draw(){
         float xpos= cos(ofDegToRad(displayCamRotation))*orbitRadius;
 //        float zpos= sin(DEG_TO_RAD((displayCamRotation))*orbitRadius;
 //
-        cam.setGlobalPosition(xpos,ypos, 400);
+        cam.setGlobalPosition(xpos,ypos, 500);
 //
         if(displayCamRotation > 360){
             displayCamRotation = 0;
@@ -175,5 +175,5 @@ void ofApp::addForceButtonPresssed(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    system("say 'this is a quick test' &");  
+//    system("say 'this is a quick test' &");  
 }
