@@ -67,12 +67,17 @@ void Sequencer::resetCurrentFrame(){
 //So that if there is a temporary frame that is being added it doesn't enter into circulation for ever
 //it forces the current particles into backburner... 
 
-void Sequencer::forceNewFrame(frame f, int fType){ 
+void Sequencer::forceNewFrame(frame f, int fType){
+    vector<string> tags;
+    if(f.frameType == 1){ //Process (which has no tags)
+        tags = currentFrame.tags;
+    }
 
     //Boolean to skip the use of weighted random sequencer
     forcedFrame = true;
     currentFrame = f;
     currentFrame.frameType = fType;
+    currentFrame.tags = tags;
 
     currentFrame.animating = true;
     
@@ -113,14 +118,11 @@ void Sequencer::sequencer(){
         
         ofSort(frameVec, &compareByWeight);
         
-    //     for(int i = 0; i < frameVec.size(); i++){
-    //         cout << frameVec[i].title ;
-    //         cout << ": "+ofToString(frameVec[i].weight) << endl;
-    //     }
         
         //Randomly choose from the first quarter of strongest weighted frames
-        weightedRandom = ofRandom(ceil(frameVec.size()/2));
+        weightedRandom = ofRandom(floor(frameVec.size()/2));
         if(frameVec[weightedRandom].uID == currentFrame.uID) weightedRandom ++; //leave in just in case get repetition
+//        frameVec[weightedRandom].weight = 0;//decrease chance of repetition?
     }
 }
 

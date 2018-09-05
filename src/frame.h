@@ -41,6 +41,7 @@ struct frame {
     string uID;
     bool animating;
     bool renderMesh;
+    bool addToMeta;
     
     vector< ofVec3f > points; //default constructed to be empty
     vector< ofColor > pointColors;

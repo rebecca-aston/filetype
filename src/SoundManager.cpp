@@ -49,7 +49,7 @@ void SoundManager::readText(string text){
     std::string close("' &");
     open += text;
     open += close;
-    system(open.c_str());
+//    system(open.c_str());
 }
 
 void SoundManager::checkIsReading(){
@@ -68,18 +68,20 @@ void SoundManager::addAudioTrack(string path){
     ofSoundPlayer sp;
     sp.load(path);
     
+    cout << path << endl;
+    
     if(sp.isLoaded()){
         audioTracks.push_back(sp);
         audioTracks.back().setVolume(1.2);
         audioTracks.back().play();
     }else{
-        cout << "Wav file cannot be loaded" << endl;
+        cout << "File cannot be loaded" << endl;
     }
 }
 
 void SoundManager::updateVolumes(){
     for(int i = 0; i < audioTracks.size();i++){
-        if(i != audioTracks.size()-1 && audioTracks[i].getVolume() > 0.2){
+        if(i != audioTracks.size()-1 && audioTracks[i].getVolume() > 0.5){
             audioTracks[i].setVolume(audioTracks[i].getVolume()-0.01);
         }
         if(!audioTracks[i].isPlaying()){

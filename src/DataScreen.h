@@ -17,6 +17,7 @@ class DataScreen {
 protected:
     ofTrueTypeFont font;
     
+    frame newestFrame;
     frame imageFrame;
     frame textFrame;
     frame meshFrame;
@@ -26,7 +27,7 @@ protected:
     float colWidth;
     
     void drawSection(frame f, float x, float y, float colW, float colH);
-    void updateMeta(frame f);
+    void updateMeta();
     void textLayout(frame f, float x, float y, float colW, float colH);
     void scaleImageSquare(ofImage img, float size, float padding);
     void removeFrame(int t);

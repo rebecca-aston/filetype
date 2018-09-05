@@ -287,12 +287,15 @@ void Control::loadFrame(Sequencer * s){
             
             break;
         }
-        case 2 : { // Mesh and Colors
+        case 2 : { // Mesh
             
-            
+            s->currentFrame.image = read.readImage("images/"+s->currentFrame.material);//realized need an image of mesh to understand correlation between data panel and particle simulation
+    
             if(s->currentFrame.uID.find("3D") != std::string::npos){
                 s->currentFrame.mesh = read.readMesh("meshes/"+s->currentFrame.externalFileName);
             }
+            
+
       
             if(s->currentFrame.mesh.getVertices().size() > 0){
                 addMeshToParticleSys(s->currentFrame.mesh);
@@ -310,13 +313,14 @@ void Control::loadFrame(Sequencer * s){
 //            currentFrame.mesh = sequence.back()->mesh;
 //            currentFrame.renderMesh = sequence.back()->renderMesh;
             s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
+            s->currentFrame.addToMeta = false;
             
             if(s->currentFrame.image.isAllocated()){
-                if(ofRandom(1)>0.96){
+                if(ofRandom(1)>0.95){
                     DelaunayImage del01;
                     s->currentFrame.mesh = del01.triangulateImage(s->currentFrame.image,false,cubeResolution);
-                    
-                    s->currentFrame.totalTime = 4000; //SLow the image from moving off?
+                    s->currentFrame.addToMeta = true;
+                    s->currentFrame.totalTime = 5000; //SLow the image from moving off?
                     
     //                Sequencer * s3D = getSequenceByType("3D");
     //                s3D->forceNewFrame(s->currentFrame,2); //returns a pointer

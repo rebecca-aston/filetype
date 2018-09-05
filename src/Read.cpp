@@ -33,7 +33,7 @@ void Read::readModel(){
                     threeDFrameVec.push_back(tempVec[j]);
                 }
                 if(tempVec[j].frameType == 3){//image
-                    tempVec[j].totalTime = 500;
+                    tempVec[j].totalTime = 800;
                     imageFrameVec.push_back(tempVec[j]);
                 }
                 if(tempVec[j].frameType == 5){//text
@@ -135,36 +135,42 @@ vector< frame > Read::readJson(string path){
             temp.totalTime = json["frames"][i]["total-time"].asInt();
             
             for(int j = 0; j < json["frames"][i]["history"].size(); j++){
-                history histEntry;
                 
-                if(dev)cout << json["frames"][i]["history"][j]["speculation-scale"].asString() << endl;
-                histEntry.speculativeScale = json["frames"][i]["history"][j]["speculation-scale"].asString();
-                
-                if(dev)cout << json["frames"][i]["history"][j]["date"].asInt() << endl;
-                histEntry.date = json["frames"][i]["history"][j]["date"].asInt();
-                
-                if(dev)cout << json["frames"][i]["history"][j]["loc-long"].asFloat() << endl;
-                histEntry.locLong = json["frames"][i]["history"][j]["loc-long"].asFloat();
-                
-                if(dev)cout << json["frames"][i]["history"][j]["loc-lat"].asFloat() << endl;
-                histEntry.locLat = json["frames"][i]["history"][j]["loc-lat"].asFloat();
-                
-                if(dev)cout << json["frames"][i]["history"][j]["citation"].asString() << endl;
-                histEntry.citation = json["frames"][i]["history"][j]["citation"].asString();
-                
-                histEntry.sound = json["frames"][i]["history"][j]["sound"].asString();
-                
-                string text = json["frames"][i]["history"][j]["text"].asString();
-                
-                if(text.find(".txt") != std::string::npos && text.find("txt/") != std::string::npos ){ //check if it's a specific path to a text file
-                    if(dev)cout << readText(text) << endl;
-                    histEntry.text = readText(text);
-                }else{
-                    if(dev)cout << text << endl;
-                    histEntry.text = text;
+                if((json["frames"][i]["history"][j]["text"].asString().size() < 800 && json["frames"][i]["history"][j]["text"].asString().size() > 10 ) || json["frames"][i]["history"][j]["sound"].asString().size() > 0){
+                    
+                    history histEntry;
+                    
+                    if(dev)cout << json["frames"][i]["history"][j]["speculation-scale"].asString() << endl;
+                    histEntry.speculativeScale = json["frames"][i]["history"][j]["speculation-scale"].asString();
+                    
+                    if(dev)cout << json["frames"][i]["history"][j]["date"].asInt() << endl;
+                    histEntry.date = json["frames"][i]["history"][j]["date"].asInt();
+                    
+                    if(dev)cout << json["frames"][i]["history"][j]["loc-long"].asFloat() << endl;
+                    histEntry.locLong = json["frames"][i]["history"][j]["loc-long"].asFloat();
+                    
+                    if(dev)cout << json["frames"][i]["history"][j]["loc-lat"].asFloat() << endl;
+                    histEntry.locLat = json["frames"][i]["history"][j]["loc-lat"].asFloat();
+                    
+                    if(dev)cout << json["frames"][i]["history"][j]["citation"].asString() << endl;
+                    histEntry.citation = json["frames"][i]["history"][j]["citation"].asString();
+                    
+                    histEntry.sound = json["frames"][i]["history"][j]["sound"].asString();
+                    
+                    string text = json["frames"][i]["history"][j]["text"].asString();
+                    
+                    if(text.find(".txt") != std::string::npos && text.find("txt/") != std::string::npos ){ //check if it's a specific path to a text file
+                        if(dev)cout << readText(text) << endl;
+                        histEntry.text = readText(text);
+                    }else{
+                        if(dev)cout << text << endl;
+                        histEntry.text = text;
+                    }
+                    
+                    temp.historyVec.push_back(histEntry);
+                    
                 }
-                
-                temp.historyVec.push_back(histEntry);
+ 
             }
             
             cout << temp.frameType << endl;
