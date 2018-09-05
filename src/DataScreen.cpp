@@ -8,7 +8,7 @@
 #include "DataScreen.h"
 
 DataScreen::DataScreen(){
-    colWidth = ofGetWidth()/2;
+    colWidth = ofGetWidth()/2-20;
     
     imgPadding = 0;
     lineHeight = 6;
@@ -40,20 +40,24 @@ void DataScreen::draw(BinnedParticleSystem * p, BinnedParticleSystem * b){
     ofSetColor(200);
     ofNoFill();
     ofSetLineWidth(1);
-    ofDrawRectangle(colWidth, 0, colWidth-3, ofGetHeight()-3);
+    ofDrawRectangle(colWidth+10, 0, colWidth+2, ofGetHeight()-3);
     ofPopStyle();
     
     ofPushStyle();
     ofSetColor(0);
-    ofDrawRectangle(0, 0, ofGetWidth()/2, ofGetHeight());
+    ofDrawRectangle(10, 0, colWidth, ofGetHeight());
     ofPopStyle();
     
-    drawSection(textFrame, 0, 0, colWidth, colWidth);
+    drawSection(textFrame, 10, 0, colWidth, colWidth);
 
-    drawSection(meshFrame, 0, ofGetHeight()-colWidth, colWidth*0.67, colWidth*0.67);
+    drawSection(meshFrame, 10, ofGetHeight()-colWidth, colWidth*0.67, colWidth*0.67);
 
-    drawSection(imageFrame, colWidth*0.67, ofGetHeight()-colWidth, colWidth*0.33, colWidth*0.33);
+    drawSection(imageFrame, colWidth*0.67+10, ofGetHeight()-colWidth, colWidth*0.33, colWidth*0.33);
 
+    
+//    drawMeta() function here
+    
+    
 }
 
 void DataScreen::drawSection(frame f, float x, float y, float colW, float colH){
@@ -110,12 +114,13 @@ void DataScreen::textLayout(frame f, float x, float y, float colW, float colH){
     lineY += font.stringHeight(wrapString(f.collection,totalW))+lineHeight;
     font.drawString(wrapString(f.desc,totalW), marginX, lineY);
     lineY += font.stringHeight(wrapString(f.desc,totalW))+lineHeight;
-    
+
     if(f.author != ""){
         string author = wrapString("Author: "+ f.author,totalW);
         font.drawString(author, marginX, lineY);
         lineY += font.stringHeight(author)+lineHeight;
     }
+    
 }
 
 
@@ -144,6 +149,33 @@ string DataScreen::wrapString(string text, int width) {
     string tempString = "";
     vector <string> words = ofSplitString(text, " ");
     
+//    vector <string> splitWord;
+//    int count = 0;
+//    while(count<words.size()) {
+//        string wrd = words[count];
+//        ofDrawBitmapString(ofToString(font.stringWidth(wrd)) + " length", ofGetWidth()/2+32, ofGetHeight()/2);
+//        if(font.stringWidth(wrd) >= (width-10)){
+//            int avgChar = font.stringWidth(wrd)/wrd.size();
+//            int maxChar = floor((width-10)/avgChar);
+////            string str =
+//            splitWord.push_back(wrd.substr(0,maxChar));
+//            if(wrd.substr(maxChar+1,wrd.size()-1).size()>0){
+//                words.insert(words.begin()+(count+1),wrd.substr(maxChar+1,wrd.size()-1));
+//                count ++;
+//            }
+//        }else{
+//            if(count< words.size()){
+//                count ++;
+//            }else{
+//                break;
+//            }
+//        }
+//    }
+    
+//    if(splitWord.size()>0){
+//        words = splitWord;
+//    }
+    
     for(int i=0; i<words.size(); i++) {
         
         string wrd = words[i];
@@ -161,6 +193,43 @@ string DataScreen::wrapString(string text, int width) {
     
     return typeWrapped;
     
+}
+
+void DataScreen::updateMeta(frame f){
+    
+    //Set variable to highlight border around "active" frame
+    
+    ofPushMatrix();
+    ofPushStyle();
+    
+    ofTranslate(0,0);
+    
+    ofSetColor(0);
+    ofDrawRectangle(0,0,ofGetWidth(),100);
+    
+//    if(f.citation != ""){
+//        string citation = wrapString("Citation: "+ f.citation,totalW);
+//        font.drawString(citation,marginX,lineY);
+//    }
+    
+    string tags = "Tags: ";
+    for(int i = 0; i < f.tags.size(); i++){
+        tags.append(f.tags[i]);
+        if(i == f.tags.size()-1){
+            tags.append(", ");
+        }
+    }
+    font.drawString(tags,0,0);
+    
+    ofPushStyle();
+    ofSetColor(200);
+    ofNoFill();
+    ofSetLineWidth(1);
+    ofDrawRectangle(0, 0, ofGetWidth(),100);
+    ofPopStyle();
+    
+    ofPopStyle();
+    ofPopMatrix();
 }
 
 void DataScreen::loadData(frame current){
@@ -182,6 +251,10 @@ void DataScreen::loadData(frame current){
     if(current.frameType == 5 ){
         textFrame = current;
     }
+    
+    
+    //Push all this into variable in this function
+//    updateMeta(current);
     
 }
 

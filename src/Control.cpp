@@ -13,6 +13,8 @@ Control::Control(){
 
 void Control::setup(){
     
+    camLook = ofVec3f(500,500,500);
+    
     //Set up all data to be used for commentary pieces
     //    Use the flocking type as the authorial intent frame...
     //    That could also be when you take a snapshot of the Pattern texture thing.
@@ -140,7 +142,7 @@ void Control::update(){
     if(scattering){
 
         //Animate the camera to look at the "leader" particle in the break up of the mesh
-        camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
+//        camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
         
 //        for(int i = 0; i < particleSystem.size(); i++) {
 //            BinnedParticle& cur = particleSystem[i];
@@ -167,7 +169,7 @@ void Control::update(){
         
     }else{
         
-        camLook = ofVec3f(particleSystem[randParticle].xt,particleSystem[randParticle].yt,particleSystem[randParticle].zt);
+//        camLook = ofVec3f(particleSystem[randParticle].xt,particleSystem[randParticle].yt,particleSystem[randParticle].zt);
         
         // Not really using this at the moment
         //Move to index if not there
@@ -297,6 +299,7 @@ void Control::loadFrame(Sequencer * s){
                 
                 //For camera to look at
                 randParticle = ofRandom(particleSystem.size());
+                camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
                 scattering = false;
             }
@@ -342,6 +345,8 @@ void Control::loadFrame(Sequencer * s){
                 
                 //For camera to look at
                 randParticle = ofRandom(particleSystem.size());
+                
+                camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
                 scattering = false;
             }else{

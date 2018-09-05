@@ -26,6 +26,7 @@ protected:
     float colWidth;
     
     void drawSection(frame f, float x, float y, float colW, float colH);
+    void updateMeta(frame f);
     void textLayout(frame f, float x, float y, float colW, float colH);
     void scaleImageSquare(ofImage img, float size, float padding);
     void removeFrame(int t);

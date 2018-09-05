@@ -60,12 +60,12 @@ void ofApp::draw(){
 //        instead of lerping to set CatPosition
 //        Get it to continually rotate around the camlook position
         
-        float orbitRadius = ofMap(sin(ofGetFrameNum()*0.001),-1,1,400,900);
+        float orbitRadius = ofMap(sin(ofGetFrameNum()*0.002),-1,1,400,900);
         float ypos= sin(ofDegToRad(displayCamRotation))*orbitRadius;
         float xpos= cos(ofDegToRad(displayCamRotation))*orbitRadius;
 //        float zpos= sin(DEG_TO_RAD((displayCamRotation))*orbitRadius;
 //
-        cam.setGlobalPosition(xpos,ypos, 500);
+        cam.setGlobalPosition(xpos,ypos, 700);
 //
         if(displayCamRotation > 360){
             displayCamRotation = 0;
