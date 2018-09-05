@@ -20,6 +20,7 @@ int main( ){
     
     settings.width = 1500;
     settings.height = 1024;
+    settings.decorated = false;
     settings.setPosition(ofVec2f(0,0));
     settings.resizable = false;
    

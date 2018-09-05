@@ -10,41 +10,38 @@
 
 #include "ofMain.h"
 #include "frame.h"
+#include "BinnedParticleSystem.h"
 
 
 class DataScreen {
 protected:
     ofTrueTypeFont font;
     
-    ofImage rouleteImage;
-//    vector<frame> drawFrames;
-    
     frame imageFrame;
     frame textFrame;
     frame meshFrame;
     
-    ofCamera cam;
+    ofCamera camBirdsEye;
     
     float colWidth;
-    ofVec2f imgSectionOrigin;
     
     void drawSection(frame f, float x, float y, float colW, float colH);
+    void textLayout(frame f, float x, float y, float colW, float colH);
     void scaleImageSquare(ofImage img, float size, float padding);
     void removeFrame(int t);
+    string wrapString(string text, int width);
+   
+    float imgPadding;
+    float lineHeight;
+    float textPadding;
     
 public:
     DataScreen();
     
     void setup();
-    void draw();
-    
-    string wrapString(string text, int width);
-    
-    
-    void drawImageRoulette(ofImage i);
+    void draw(BinnedParticleSystem * p, BinnedParticleSystem * b);
     void loadData(frame current);
-   
-
+    
 };
 
 

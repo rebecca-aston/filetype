@@ -23,7 +23,7 @@ void BinnedParticle::updatePosition(float timeStep) {
     //needs work
     if(life < 100000 ) {
         
-        life -= 0.1;
+        life -= 0.2;
 
         targetColor = ofColor(targetColor.r,targetColor.g,targetColor.b,MAX(0,life));
     }
@@ -149,12 +149,15 @@ void BinnedParticle::draw() {
 //    glVertex3f(x, y, z);
     
 //    if(triMode){
+    
+    ofPushStyle();
         glBegin(GL_TRIANGLES);
             ofSetColor(targetColor);
             glVertex3f(x, y, z);
             glVertex3f(x-p1.x,y-p1.y,z-p1.z);
             glVertex3f(x-p2.x,y-p2.y,z-p2.z);
         glEnd();
+    ofPopStyle();
         
 //    }else{
 //        glBegin(GL_POINTS);

@@ -245,20 +245,21 @@ void Control::update(){
 
 //Draw Particle System Screen
 void Control::draw(){
-    particleSystem.draw();
     backBurnerSystem.draw();
+    particleSystem.draw();
 }
 
 //Draw Data Screen
 void Control::drawDataScreen(){
     
-    dataScreen.draw();
+    dataScreen.draw(&particleSystem, &backBurnerSystem);
     
+    ofPushStyle();
     ofSetColor(255);
-    ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", 32, 32);
-    ofDrawBitmapString(ofToString(backBurnerSystem.size()) + " backburner particles", 32, 52);
-    ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", 32, 72);
-    ofDrawBitmapString(ofToString((int) (ofGetElapsedTimeMillis() - startTime)) + " millis",32,92);
+    ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", ofGetWidth()/2+32, 32);
+    ofDrawBitmapString(ofToString(backBurnerSystem.size()) + " backburner particles", ofGetWidth()/2+32, 52);
+    ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", ofGetWidth()/2+32, 72);
+    ofPopStyle();
 }
 
 //Storing the latest data in a "current Frame" so that there is an additive effect,
@@ -291,12 +292,15 @@ void Control::loadFrame(Sequencer * s){
                 s->currentFrame.mesh = read.readMesh("meshes/"+s->currentFrame.externalFileName);
             }
       
-            addMeshToParticleSys(s->currentFrame.mesh);
-            
-            //For camera to look at
-            randParticle = ofRandom(particleSystem.size());
-            
-            scattering = false;
+            if(s->currentFrame.mesh.getVertices().size() > 0){
+                addMeshToParticleSys(s->currentFrame.mesh);
+                
+                //For camera to look at
+                randParticle = ofRandom(particleSystem.size());
+                
+                scattering = false;
+            }
+
             break;
         }
         case 3 : { // Image
@@ -304,15 +308,22 @@ void Control::loadFrame(Sequencer * s){
 //            currentFrame.renderMesh = sequence.back()->renderMesh;
             s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
             
-            if(ofRandom(1)>0.95){
-                DelaunayImage del01;
-                s->currentFrame.mesh = del01.triangulateImage(s->currentFrame.image,false,cubeResolution);
-                
-                s->currentFrame.totalTime = 3000; //SLow the image from moving off?
-                
-//                Sequencer * s3D = getSequenceByType("3D");
-//                s3D->forceNewFrame(s->currentFrame,2); //returns a pointer
-                addMeshToBackBurnerSys(s->currentFrame.mesh);
+            if(s->currentFrame.image.isAllocated()){
+                if(ofRandom(1)>0.96){
+                    DelaunayImage del01;
+                    s->currentFrame.mesh = del01.triangulateImage(s->currentFrame.image,false,cubeResolution);
+                    
+                    s->currentFrame.totalTime = 4000; //SLow the image from moving off?
+                    
+    //                Sequencer * s3D = getSequenceByType("3D");
+    //                s3D->forceNewFrame(s->currentFrame,2); //returns a pointer
+                    addMeshToBackBurnerSys(s->currentFrame.mesh);
+                }
+            }else{
+                cout << "Image load failed: ";
+                cout << s->currentFrame.externalFileName << endl;
+                s->sequencer();
+                loadFrame(s);
             }
             
             break;
@@ -320,24 +331,33 @@ void Control::loadFrame(Sequencer * s){
         case 4 : { // Texture
             
             //Create and dispose of delaunay iamge here
-            DelaunayImage del;
             s->currentFrame.image = read.readImage("textures/"+s->currentFrame.externalFileName);
-            s->currentFrame.mesh = del.triangulateImage(s->currentFrame.image,true,cubeResolution);
             
-            cout << s->currentFrame.mesh.getVertices().size() << endl;
-            
-            addMeshToParticleSys(s->currentFrame.mesh);
-            
-            //For camera to look at
-            randParticle = ofRandom(particleSystem.size());
-            
-            scattering = false;
+            if(s->currentFrame.image.isAllocated()){
+                DelaunayImage del;
+                s->currentFrame.mesh = del.triangulateImage(s->currentFrame.image,true,cubeResolution);
+                
+                
+                addMeshToParticleSys(s->currentFrame.mesh);
+                
+                //For camera to look at
+                randParticle = ofRandom(particleSystem.size());
+                
+                scattering = false;
+            }else{
+                cout << "Image load failed: ";
+                cout << s->currentFrame.externalFileName << endl;
+                s->sequencer();
+                loadFrame(s);
+            }
+
             break;
         }
         case 5 : { // Text
             //If it's only text based, let the sound keep playing in the background?
             s->currentFrame.totalTime = 500;
             
+            //hmm am I still using this check?
             if(s->currentFrame.externalFileName != "" && (s->currentFrame.externalFileName.find(".png") != std::string::npos || s->currentFrame.externalFileName.find(".jpg") != std::string::npos || s->currentFrame.externalFileName.find(".jpeg") != std::string::npos)){
                 s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
             }
