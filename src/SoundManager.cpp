@@ -81,7 +81,7 @@ void SoundManager::addAudioTrack(string path){
 
 void SoundManager::updateVolumes(){
     for(int i = 0; i < audioTracks.size();i++){
-        if(i != audioTracks.size()-1 && audioTracks[i].getVolume() > 0.5){
+        if(i != audioTracks.size()-1 && audioTracks[i].getVolume() > 0.2){
             audioTracks[i].setVolume(audioTracks[i].getVolume()-0.01);
         }
         if(!audioTracks[i].isPlaying()){

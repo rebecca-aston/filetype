@@ -256,12 +256,12 @@ void Control::drawDataScreen(){
     
     dataScreen.draw(&particleSystem, &backBurnerSystem);
     
-    ofPushStyle();
-    ofSetColor(255);
-    ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", ofGetWidth()/2+32, 32);
-    ofDrawBitmapString(ofToString(backBurnerSystem.size()) + " backburner particles", ofGetWidth()/2+32, 52);
-    ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", ofGetWidth()/2+32, 72);
-    ofPopStyle();
+//    ofPushStyle();
+//    ofSetColor(255);
+//    ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", ofGetWidth()/2+32, 32);
+//    ofDrawBitmapString(ofToString(backBurnerSystem.size()) + " backburner particles", ofGetWidth()/2+32, 52);
+//    ofDrawBitmapString(ofToString((int) ofGetFrameRate()) + " fps", ofGetWidth()/2+32, 72);
+//    ofPopStyle();
 }
 
 //Storing the latest data in a "current Frame" so that there is an additive effect,

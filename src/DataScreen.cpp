@@ -50,9 +50,9 @@ void DataScreen::draw(BinnedParticleSystem * p, BinnedParticleSystem * b){
     
     drawSection(textFrame, 10, 0, colWidth, colWidth);
 
-    drawSection(meshFrame, 10, ofGetHeight()-colWidth, colWidth*0.67, colWidth*0.67);
+    drawSection(meshFrame, 10, ofGetHeight()-colWidth*1.12, colWidth*0.6, colWidth); //EDIT HERE
 
-    drawSection(imageFrame, colWidth*0.67+10, ofGetHeight()-colWidth, colWidth*0.33, colWidth*0.33);
+    drawSection(imageFrame, colWidth*0.6+10, ofGetHeight()-colWidth*1.12, colWidth*0.4, colWidth); //EDIT HERE
 
 
     updateMeta();
@@ -91,11 +91,7 @@ void DataScreen::drawSection(frame f, float x, float y, float colW, float colH){
             textLayout(f,0,colW,colW,colH);
         }
         
-        
-
-        
     }
-    
     
     ofPopStyle();
     ofPopMatrix();
@@ -176,19 +172,16 @@ void DataScreen::updateMeta(){
     ofPushMatrix();
     ofPushStyle();
     
-    ofTranslate(0,ofGetHeight()*0.75);
-    
-    
-    ofSetColor(0);
-    ofDrawRectangle(0,0,ofGetWidth(),50);
-    
+    ofTranslate(0,ofGetHeight()*0.77); //EDIT FOR PLACEMENT HERE
 
+    ofSetColor(0);
+    ofDrawRectangle(10,0,ofGetWidth()-38,60);
     
     ofSetColor(255);
     
     string frameName = "New Data: ";
     
-    font.drawString(frameName+newestFrame.title,textPadding,textPadding+2);
+    font.drawString(frameName+newestFrame.title,textPadding+10,textPadding+3);
     
     string tags = "Tags: ";
     for(int i = 0; i < newestFrame.tags.size(); i++){
@@ -197,18 +190,18 @@ void DataScreen::updateMeta(){
             tags.append(", ");
         }
     }
-    font.drawString(tags,textPadding,29);
+    font.drawString(tags,textPadding+10,33);
     
     if(newestFrame.citation != ""){
         string citation = "Citation: ";
-        font.drawString(citation+newestFrame.citation,textPadding,44);
+        font.drawString(citation+newestFrame.citation,textPadding+10,50);
     }
     
     ofPushStyle();
     ofSetColor(200);
     ofNoFill();
     ofSetLineWidth(1);
-    ofDrawRectangle(0, 0, ofGetWidth(),50);
+    ofDrawRectangle(10, 0, ofGetWidth()-38,60);
     ofPopStyle();
     
     ofPopStyle();

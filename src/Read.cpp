@@ -33,7 +33,7 @@ void Read::readModel(){
                     threeDFrameVec.push_back(tempVec[j]);
                 }
                 if(tempVec[j].frameType == 3){//image
-                    tempVec[j].totalTime = 800;
+                    tempVec[j].totalTime = 500;
                     imageFrameVec.push_back(tempVec[j]);
                 }
                 if(tempVec[j].frameType == 5){//text
@@ -136,7 +136,7 @@ vector< frame > Read::readJson(string path){
             
             for(int j = 0; j < json["frames"][i]["history"].size(); j++){
                 
-                if((json["frames"][i]["history"][j]["text"].asString().size() < 800 && json["frames"][i]["history"][j]["text"].asString().size() > 10 ) || json["frames"][i]["history"][j]["sound"].asString().size() > 0){
+                if((json["frames"][i]["history"][j]["text"].asString().size() < 1000 && json["frames"][i]["history"][j]["text"].asString().size() > 10 ) || json["frames"][i]["history"][j]["sound"].asString().size() > 0){
                     
                     history histEntry;
                     
