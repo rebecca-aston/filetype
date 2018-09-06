@@ -49,9 +49,9 @@ void DataScreen::draw(BinnedParticleSystem * p, BinnedParticleSystem * b){
     
     drawSection(textFrame, 10, 0, colWidth, colWidth);
 
-    drawSection(meshFrame, 10, ofGetHeight()-colWidth*1.12, colWidth*0.6, colWidth); //EDIT HERE
+    drawSection(meshFrame, 10, ofGetHeight()-colWidth+20, colWidth*0.6, colWidth); //EDIT HERE
 
-    drawSection(imageFrame, colWidth*0.6+10, ofGetHeight()-colWidth*1.12, colWidth*0.4, colWidth); //EDIT HERE
+    drawSection(imageFrame, colWidth*0.6+10, ofGetHeight()-colWidth+20, colWidth*0.4, colWidth); //EDIT HERE
 
 
     updateMeta();
@@ -169,16 +169,16 @@ void DataScreen::updateMeta(){
     ofPushMatrix();
     ofPushStyle();
     
-    ofTranslate(0,ofGetHeight()*0.77); //EDIT FOR PLACEMENT HERE
+    ofTranslate(0,ofGetHeight()*0.92); //EDIT FOR PLACEMENT HERE
 
     ofSetColor(0);
-    ofDrawRectangle(10,0,ofGetWidth()-38,60);
+    ofDrawRectangle(10,0,ofGetWidth()-38,80);
     
     ofSetColor(255);
     
     string frameName = "New Data: ";
     
-    font.drawString(frameName+newestFrame.title,textPadding+10,textPadding+3);
+    font.drawString(frameName+newestFrame.title,textPadding+10,textPadding+13);
     
     string tags = "Tags: ";
     for(int i = 0; i < newestFrame.tags.size(); i++){
@@ -187,18 +187,18 @@ void DataScreen::updateMeta(){
             tags.append(", ");
         }
     }
-    font.drawString(tags,textPadding+10,33);
+    font.drawString(tags,textPadding+10,43);
     
     if(newestFrame.citation != ""){
         string citation = "Citation: ";
-        font.drawString(citation+newestFrame.citation,textPadding+10,50);
+        font.drawString(citation+newestFrame.citation,textPadding+10,60);
     }
     
     ofPushStyle();
     ofSetColor(200);
     ofNoFill();
     ofSetLineWidth(1);
-    ofDrawRectangle(10, 0, ofGetWidth()-38,60);
+    ofDrawRectangle(10, 0, ofGetWidth()-38,80);
     ofPopStyle();
     
     ofPopStyle();
