@@ -1,9 +1,29 @@
 //
 //  Control.cpp
-//  artifactlabEMMERSION
 //
 //  Created by Rebecca Aston on 7/17/18.
 //
+//
+// JSON files are read in which have text and point to different media/images/sound etc.
+// I have two structs that mirror the data structure of my JSON files, the main one being "frame".
+// I read the data into vectors of frame objects that then live in Sequencer objects where I do
+// a weighted sort of the contet based on tags. Different frames are loaded into different sections
+// depending on medium or frameType, text is displayed on the Datascreen, audio is played, meshes are added to the
+// particle system etc. This is largely a prototype of figuring out how to synaesthetically
+// work with text, image, voice etc in a programmatic way. There is a write class, it's largley still pseduo, and/or
+// I was just using the exportPLY function inside of control originally earlier on when I was exporting meshes.
+//
+// References:
+// This project is an extension of something I started working on for Lior's class when I audited it.
+// I developed it further for Machine Learning where I was using it with gesture control.
+// I largley gutted it and built this system up around Kyle MacDonald's binned particle system as I wanted something
+// more efficient than a brute force particle system:
+// https://github.com/kylemcdonald/openFrameworksDemos/tree/master/BinnedParticleSystem/src
+// I extended his 2D system for 3D and built on the ideas, concepts and technical skills learnt in earlier iterations.
+// The other reference is to Howard's workshop that he did on web-scrapping. I built up on his
+// Beautiful soup example to scrape some of the data used in the piece. I have submitted that code as well.
+
+//This is the controller for all the other classes.
 
 #include "Control.h"
 
@@ -427,69 +447,7 @@ Sequencer* Control::getSequenceByType(string t){
 }
 
 
-
-
-
-
-
-
-
-
-
-//MOVE THIS TO WRITE
 void Control::exportPLY(){
-    frame temp;
-    
-    //for export it's not just the current frame, it's the whole system
-    //move into JsonRW / equivalent name eventually
-    
-    for(int i = 0; i < particleSystem.size(); i++){
-        if(particleSystem[i].x < (cubeResolution/2)-120){
-            ofVec3f p = ofVec3f(particleSystem[i].x,particleSystem[i].y,particleSystem[i].z);
-            ofVec3f p1 = ofVec3f(p.x + particleSystem[i].p1.x, p.y + particleSystem[i].p1.y, p.z + particleSystem[i].p1.z);
-            ofVec3f p2 = ofVec3f(p.x + particleSystem[i].p2.x, p.y + particleSystem[i].p2.y, p.z + particleSystem[i].p2.z);
-            if(p.distance(p1) < 30 && p.distance(p2) < 30){
-                temp.points.push_back(p);
-                temp.points.push_back(p1);
-                temp.points.push_back(p2);
-                temp.pointColors.push_back(particleSystem[i].targetColor);
-                temp.pointColors.push_back(particleSystem[i].p1Color);
-                temp.pointColors.push_back(particleSystem[i].p2Color);
-            }
-        }
-  
-    }
-    
-//    for(int i = 0; i < particleSystem.size(); i++){
-//        ofVec3f p = ofVec3f(particleSystem[i].x,particleSystem[i].y,particleSystem[i].z);
-//        ofVec3f p1 = ofVec3f(p.x + particleSystem[i].p1.x, p.y + particleSystem[i].p1.y, p.z + particleSystem[i].p1.z);
-//        ofVec3f p2 = ofVec3f(p.x + particleSystem[i].p2.x, p.y + particleSystem[i].p2.y, p.z + particleSystem[i].p2.z);
-//        if(p.distance(p1) < 30 && p.distance(p2) < 30){
-//            temp.points.push_back(p);
-//            temp.points.push_back(p1);
-//            temp.points.push_back(p2);
-//            temp.pointColors.push_back(particleSystem[i].targetColor);
-//            temp.pointColors.push_back(particleSystem[i].p1Color);
-//            temp.pointColors.push_back(particleSystem[i].p2Color);
-//        }
-//    }
-    
-    
-    
-//    for(int i = 0; i < backBurnerSystem.size(); i++){
-//            ofVec3f p = ofVec3f(backBurnerSystem[i].x,backBurnerSystem[i].y,backBurnerSystem[i].z);
-//            ofVec3f p1 = ofVec3f(p.x + backBurnerSystem[i].p1.x, p.y + backBurnerSystem[i].p1.y, p.z + backBurnerSystem[i].p1.z);
-//            ofVec3f p2 = ofVec3f(p.x + backBurnerSystem[i].p2.x, p.y + backBurnerSystem[i].p2.y, p.z + backBurnerSystem[i].p2.z);
-//            if(p.distance(p1) < 30 && p.distance(p2) < 30){
-//                temp.pointsB.push_back(p);
-//                temp.pointsB.push_back(p1);
-//                temp.pointsB.push_back(p2);
-//                temp.pointColorsB.push_back(backBurnerSystem[i].targetColor);
-//                temp.pointColorsB.push_back(backBurnerSystem[i].p1Color);
-//                temp.pointColorsB.push_back(backBurnerSystem[i].p2Color);
-//            }
-//    }
-
-    write.writeMesh(temp,"pointCloud_"+ofGetTimestampString());
+    //call exportPLY in Write class
 }
 

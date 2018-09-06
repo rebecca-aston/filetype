@@ -1,5 +1,9 @@
 #include "ofApp.h"
 
+//This just the development GUI, camera
+//And basic setup of the main Controller which handles everything
+//Please see control for more comments and references
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofBackground(0);

@@ -139,7 +139,7 @@ void DataScreen::scaleImageSquare(ofImage img, float size, float padding){
     ofPopMatrix();
 }
 
-//https://forum.openframeworks.cc/t/text-wrapping/2953
+//Reference for below function: https://forum.openframeworks.cc/t/text-wrapping/2953
 string DataScreen::wrapString(string text, int width) {
     
     string typeWrapped = "";

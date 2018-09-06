@@ -11,5 +11,6 @@ public:
     
     void writeMesh(frame f, string fileName);
     void writeJson(frame f, string s, bool newFile);
+    void writePLY();
     
 };
