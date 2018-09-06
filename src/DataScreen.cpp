@@ -7,6 +7,9 @@
 
 #include "DataScreen.h"
 
+//This all got a bit messy with hard coded pixel changes to make it fit perfectly to
+//the installed screen in my table, but for making pruposes you can get an idea
+
 DataScreen::DataScreen(){
     colWidth = ofGetWidth()/2-20;
     
@@ -15,13 +18,9 @@ DataScreen::DataScreen(){
     textPadding = 13;
 }
 
-// Set camera and just call draw particle system in it again...
-//see if that's too much for the system....
-
 void DataScreen::setup(){
     font.load("GURU0.ttf",9);
     font.setLineHeight(font.getLineHeight()+5);
-//    imgFbo->allocate(400,400,GL_RGBA);
     
     camBirdsEye.setGlobalPosition(0, 500, 2000);
     camBirdsEye.lookAt(ofVec3f(0, 500, 0));
@@ -166,8 +165,6 @@ string DataScreen::wrapString(string text, int width) {
 }
 
 void DataScreen::updateMeta(){
-    
-    //Set variable to highlight border around "active" frame
     
     ofPushMatrix();
     ofPushStyle();

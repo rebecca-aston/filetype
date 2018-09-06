@@ -23,17 +23,10 @@ void BinnedParticleSystem::setTimeStep(float timeStep) {
 }
 
 void BinnedParticleSystem::removeAtIndex(int i) {
-    
-    
-    //NOT ARRIVING!!!
-
-//    particles.erase(particles.begin() + i);
-//    cout << particles.size() << endl;
+    //Didn't use at index in the end
     
     particles.pop_back();
-    
-    
-    
+
 }
 
 void BinnedParticleSystem::popFront(int amt) { 
@@ -142,90 +135,6 @@ vector<BinnedParticle*> BinnedParticleSystem::getRegion(unsigned minX, unsigned 
     return region;
 }
 
-//just beginnings of musing
-void BinnedParticleSystem::flowField(float targetX, float targetY, float targetZ, float radius, float scale) {
-    float minX = targetX - radius;
-    float minY = targetY - radius;
-    float minZ = targetZ - radius;
-    float maxX = targetX + radius;
-    float maxY = targetY + radius;
-    float maxZ = targetZ + radius;
-    if(minX < 0)
-        minX = 0;
-    if(minY < 0)
-        minY = 0;
-    if(minZ < 0)
-        minZ = 0;
-    
-    //All similar to the get region function, not sure why he crammed it all in here.
-    unsigned minXBin = ((unsigned) minX) >> k;
-    unsigned minYBin = ((unsigned) minY) >> k;
-    unsigned minZBin = ((unsigned) minZ) >> k;
-    unsigned maxXBin = ((unsigned) maxX) >> k;
-    unsigned maxYBin = ((unsigned) maxY) >> k;
-    unsigned maxZBin = ((unsigned) maxZ) >> k;
-    
-    
-    maxXBin++;
-    maxYBin++;
-    maxZBin++;
-    if(maxXBin > xBins)
-        maxXBin = xBins;
-    if(maxYBin > yBins)
-        maxYBin = yBins;
-    if(maxZBin > zBins)
-        maxZBin = zBins;
-    
-    
-    float maxrsq;
-
-    maxrsq = radius * radius;
-    for(int z = minZBin; z < maxZBin; z++) {
-        for(int y = minYBin; y < maxYBin; y++) { // ah so based off the radius has created a way to check the cols/rows next to where any potential center point of a particle could be.
-            for(int x = minXBin; x < maxXBin; x++) {
-                vector<BinnedParticle*>& curBin = bins[(z * yBins * xBins) + (y * xBins + x)];
-                int n = curBin.size();
-                for(int i = 0; i < n; i++) {
-                    
-//                    float vecX = x-x/2;
-//                    float vecY = y-y/2;
-//                    float vecZ = z-z/2;
-                    
-//                    float vecX = y*z;
-//                    float vecY = x*z;
-//                    float vecZ = x*y;
-//
-
-                    
-                    float noise = ofMap(ofNoise(x*0.5,y*0.5,z*ofGetFrameNum()*0.5),0,1,0,TWO_PI);
-                    
-                                        float vecX = cos(noise);
-                                        float vecY = sin(noise);
-                                        float vecZ = 0;
-                    
-                    float vecXN = vecX + 1;
-                    float vecYN = vecY + 1;
-                    float vecZN = vecZ + 1;
-                    
-                    ofSetColor(255,0,0);
-                    glBegin(GL_LINE_STRIP);
-                    glVertex3f(vecX , vecY , vecZ );
-                    glVertex3f(vecXN , vecYN, vecZN);
-                    glEnd();
-                    
-                    BinnedParticle& curBinnedParticle = *(curBin[i]);
-                    
-                    curBinnedParticle.xf += MIN(vecX*0.05,1);
-                    curBinnedParticle.yf += MIN(vecY*0.05,1);
-                    curBinnedParticle.zf += MIN(vecZ*0.05,1);
-                    
-                }
-            }
-        }
-    }
-}
-
-//Aha stupidly named function
 //This is more like setupBins
 void BinnedParticleSystem::setupForces() {
 	int n = bins.size();
@@ -270,6 +179,7 @@ void BinnedParticleSystem::addForce(const BinnedParticle& particle, float radius
 	addForce(particle.x, particle.y, particle.z, radius, -scale); 
 }
 
+//I split Kyle's original function into two so that I could just use the force without the binning if need be
 void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ, float radius, float scale) {
 	float minX = targetX - radius;
 	float minY = targetY - radius;
@@ -284,7 +194,6 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
     if(minZ < 0)
         minZ = 0;
     
-    //All similar to the get region function, not sure why he crammed it all in here.
 	unsigned minXBin = ((unsigned) minX) >> k;
 	unsigned minYBin = ((unsigned) minY) >> k;
     unsigned minZBin = ((unsigned) minZ) >> k;
@@ -292,7 +201,6 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
 	unsigned maxYBin = ((unsigned) maxY) >> k;
     unsigned maxZBin = ((unsigned) maxZ) >> k;
 
-    
 	maxXBin++;
 	maxYBin++;
     maxZBin++;
@@ -303,7 +211,6 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
     if(maxZBin > zBins)
         maxZBin = zBins;
     
-
     for(int z = minZBin; z < maxZBin; z++) {
         for(int y = minYBin; y < maxYBin; y++) { // ah so based off the radius has created a way to check the cols/rows next to where any potential center point of a particle could be.
             for(int x = minXBin; x < maxXBin; x++) {
@@ -322,6 +229,7 @@ void BinnedParticleSystem::addForce(float targetX, float targetY, float targetZ,
     }
 }
 
+//I split Kyle's original function into two so that I could just use the force without the binning if need be
 void BinnedParticleSystem::force(BinnedParticle& curBinnedParticle,float targetX,float targetY,float targetZ, float radius, float scale){
     
     float xd, yd, zd, length;

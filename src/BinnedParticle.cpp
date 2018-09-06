@@ -45,30 +45,30 @@ void BinnedParticle::resetForce() {
     zf = 0;
 }
 
+//alternate bounds/action
 void BinnedParticle::bounceOffWalls(float left, float top, float right, float bottom, float damping) {
 	bool collision = false;
 
-//    if (x > right){
-//        x = right;//-10;
-//        xv *= -1;
-//        collision = true;
-//    } else if (x < left){
-//        x = left;//+10;
-//        xv *= -1;
-//        collision = true;
-//    }
-//
-//    if (y > bottom){
-//        y = bottom;//-10;
-//        yv *= -1;
-//        collision = true;
-//    } else if (y < top){
-//        y = top;//+10;
-//        yv *= -1;
-//        collision = true;
-//    }
+    if (x > right){
+        x = right;//-10;
+        xv *= -1;
+        collision = true;
+    } else if (x < left){
+        x = left;//+10;
+        xv *= -1;
+        collision = true;
+    }
 
-    //Change to depth??
+    if (y > bottom){
+        y = bottom;//-10;
+        yv *= -1;
+        collision = true;
+    } else if (y < top){
+        y = top;//+10;
+        yv *= -1;
+        collision = true;
+    }
+
     if (z > bottom){
         z = bottom;//-10;
         zv *= -1;
@@ -76,11 +76,11 @@ void BinnedParticle::bounceOffWalls(float left, float top, float right, float bo
         collision = true;
         
     }
-//    else if (z < top){
-//        z = top;
-//        zv *= -1.5;
-//        collision = true;
-//    }
+    else if (z < top){
+        z = top;
+        zv *= -1.5;
+        collision = true;
+    }
     
 	if (collision == true){
 		xv *= damping;
@@ -108,6 +108,7 @@ void BinnedParticle::bounceOffFloor(float floor, float damping) {
     }
 }
 
+//alternate bounds/action
 void BinnedParticle::swirl() {
     xv += 0.001 * cos (TWO_PI * ofNoise(1.5 * x, 1.5 * y, 0.01 * z));
 }
@@ -143,13 +144,9 @@ void BinnedParticle::setLife(int l){
 //the second two are just having the same velocity added to them. 
 
 void BinnedParticle::draw() {
-//    if(color != targetColor) lerp color...
-//    ofSetColor(targetColor);
-    //The legacy GL point solution
-//    glVertex3f(x, y, z);
     
-//    if(triMode){
-    
+    //The legacy GL draw solution
+
     ofPushStyle();
         glBegin(GL_TRIANGLES);
             ofSetColor(targetColor);
@@ -158,13 +155,7 @@ void BinnedParticle::draw() {
             glVertex3f(x-p2.x,y-p2.y,z-p2.z);
         glEnd();
     ofPopStyle();
-        
-//    }else{
-//        glBegin(GL_POINTS);
-//            glVertex3f(x, y, z);
-//        glEnd();
-//    }
-
+    
 }
 
 

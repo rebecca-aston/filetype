@@ -15,16 +15,15 @@ void Control::setup(){
     
     camLook = ofVec3f(500,500,500);
     
-    //Set up all data to be used for commentary pieces
-    //    Use the flocking type as the authorial intent frame...
-    //    That could also be when you take a snapshot of the Pattern texture thing.
-    //    sequence.push_back(&flock);
+    //This is a frame that represents the act of scattering/exploding
+    //It is the sort of artistic act that I am taking and have thought of this as the "process" frame type
     scatter.frameType = 1;
     scatter.totalTime = 20000;
     
-    //Set up all data to be used for historical / raw data
+    //Set up all the filesystem data to be used for historical / raw data
     read.readModel();
     
+//    Grab the data and load it into sequencer objects that manage different categories of data
     if(read.imageFrameVec.size() > 0){
         Sequencer imageSequence;
         imageSequence.setup(read.imageFrameVec, "image");
@@ -39,13 +38,14 @@ void Control::setup(){
         sequences.push_back(textSequence);
     }
     
-    if(read.processFrameVec.size() > 0){
-        Sequencer processSequence;
-        processSequence.setup(read.processFrameVec, "process");
-        
-        sequences.push_back(processSequence);
-    }
+//    if(read.processFrameVec.size() > 0){
+//        Sequencer processSequence;
+//        processSequence.setup(read.processFrameVec, "process");
+//
+//        sequences.push_back(processSequence);
+//    }
     
+    //I ended up just adding process into the 3D vector as it's in the same space / particle system
     if(read.threeDFrameVec.size() > 0){
         Sequencer threeDSequence;
         threeDSequence.setup(read.threeDFrameVec, "3D");
@@ -65,21 +65,18 @@ void Control::setup(){
     int binPower = 6;
     cubeResolution = 1000;
     
-    //The active particles
+    //The ACTIVE particles
     particleSystem.setup(cubeResolution, cubeResolution, binPower);
     
-    kBinnedParticles = 50000;//25000 is enough to do all triangles
+    //The BACKGROUND particle system
     backBurnerSystem.setup(cubeResolution*1.5, cubeResolution*1.5, binPower);
     
     timeStep = 100;
-    isMousePressed = false;
-    slowMotion = true;
+ 
     particleNeighborhood = 64;
     particleRepulsion = .5;
     particleCohesion = .3;
     centerAttraction = .01;
-    drawBalls = true;
-
     particleAlign = 0;
 }
 
@@ -90,27 +87,25 @@ void Control::setupDataScreen(){
 
 void Control::update(){
 
-
+    //Loading in a new "frame" of data is handled by animation time variable
+    //Each sequence stores a current frame and its data and animation time
     for(int i = 0; i < sequences.size();i++){
         if(!sequences[i].currentFrame.animating){
             sequences[i].startTime = ofGetElapsedTimeMillis(); 
             sequences[i].currentFrame.animating = true;
             
-            cout << "CURRENT: "+sequences[i].currentFrame.title+sequences[i].vecType<< endl;
+            //Debug
+//            cout << "CURRENT: "+sequences[i].currentFrame.title+sequences[i].vecType<< endl;
             
             //Every other frame in the mesh field, add a scatter frame
             if(sequences[i].vecType == "3D" && !scattering){
-//                scattering = true;
-                sequences[i].forceNewFrame(scatter, 1); //Scaterring type
+                sequences[i].forceNewFrame(scatter, 1); //Second argument is Scaterring type
             }
-//            else if(sequences[i].vecType == "3D" ){
-//                scattering = false;
-//            }
-            
+
             sequences[i].sequencer();
             loadFrame(&sequences[i]);
             
-        }else{// maybe if getting too much lag with everything happening at load do sequencer half way
+        }else{
             if(ofGetElapsedTimeMillis() - sequences[i].startTime > sequences[i].currentFrame.totalTime){
                 sequences[i].currentFrame.animating = false;
             }
@@ -119,7 +114,7 @@ void Control::update(){
     }
 
     
-    //Just for audio tracks not system read out
+    //Just for audio tracks not system/text read out
     soundManager.updateVolumes();
     
     //Particle System
@@ -140,15 +135,6 @@ void Control::update(){
     //Change to two particle system states
     
     if(scattering){
-
-        //Animate the camera to look at the "leader" particle in the break up of the mesh
-//        camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
-        
-//        for(int i = 0; i < particleSystem.size(); i++) {
-//            BinnedParticle& cur = particleSystem[i];
-//
-//            //                    cur.addDampingForce();
-//        }
         
         //Only apply flocking to a random selection of particles
         for(int i = MAX(0,randParticle - 100); i < MIN(particleSystem.size(),randParticle + 100); i++){
@@ -164,15 +150,11 @@ void Control::update(){
             
         }
         
-        //this is causing bugs
         particleSystem.addAttractionForce(particleSystem[randParticle], particleNeighborhood+30, .3);
         
     }else{
         
-//        camLook = ofVec3f(particleSystem[randParticle].xt,particleSystem[randParticle].yt,particleSystem[randParticle].zt);
-        
-        // Not really using this at the moment
-        //Move to index if not there
+        //Move the the position of the target/original mesh vertex (they are initialized with a bit of randomness so they shiver into place)
         for(int i = 0; i < particleSystem.size(); i++) {
             BinnedParticle& cur = particleSystem[i];
             particleSystem.force(cur,cur.xt,cur.yt,cur.zt, 10000, -.01);
@@ -186,29 +168,15 @@ void Control::update(){
     //FOR All states
     for(int i = 0; i < particleSystem.size(); i++) {
         BinnedParticle& cur = particleSystem[i];
- 
         cur.bounceOffFloor(0);
     }
     
-    //BACKGROUND
-    
-    //Maybe better to think of this background as the flow field / global forces (although ff might be too heavy)
-    //Map data / trade routes getting thrown in as movement/flow vectors..
-    
-    //        write better flow field
-    //        particleSystem.flowField(cur.x, cur.y, cur.z, particleNeighborhood, particleRepulsion);
-    
-    
     
     //BACKGROUND
-    
-    //FIX FADE!!!
-    if(backBurnerSystem.size() > 0 ){//&& ofGetFrameNum()%5 == 0
+    //FIX FADE: the life of the particle thing is something I'd like to make more elegant
+    if(backBurnerSystem.size() > 0 ){
         int rand = ofRandom(0,backBurnerSystem.size());
-//        int range = MIN(backBurnerSystem.size(), rand+10);
-//        for(int i = rand; i < range; i++) {
             if(backBurnerSystem[rand].life == 100000) backBurnerSystem[rand].setLife(255); //CHANGE THIS
-//        }
     }
 
     for(int i = 0; i < backBurnerSystem.size(); i++) {
@@ -219,7 +187,7 @@ void Control::update(){
             backBurnerSystem.force(cur,cur.x,cur.y,0, 10000, -.01);
         }
         
-        //FADE / more elegant system?
+        //Remove particel at end of life
         if( backBurnerSystem[i].life <= 0) {
             backBurnerSystem.removeAtIndex(i);
         }
@@ -232,15 +200,6 @@ void Control::update(){
     particleSystem.update(ofGetLastFrameTime());
     //BACKGROUND
     backBurnerSystem.update(ofGetLastFrameTime());
-    
-    
-    //SoundManager
-    
-    //Move all this into the sound manager
-    //pass in the history vector as the argument
-    
-
-    
     
 }
 
@@ -256,6 +215,7 @@ void Control::drawDataScreen(){
     
     dataScreen.draw(&particleSystem, &backBurnerSystem);
     
+    //Debug
 //    ofPushStyle();
 //    ofSetColor(255);
 //    ofDrawBitmapString(ofToString(particleSystem.size()) + " particles", ofGetWidth()/2+32, 32);
@@ -264,66 +224,59 @@ void Control::drawDataScreen(){
 //    ofPopStyle();
 }
 
-//Storing the latest data in a "current Frame" so that there is an additive effect,
-//old data stays on Data Screen
-//Also images/meshes are not saved in memory but re-loaded when needed
 void Control::loadFrame(Sequencer * s){
     
     s->resetCurrentFrame();
     
     switch(s->currentFrame.frameType){
-        case 1 : { // Process
+        case 1 : { // Process / Explosion / Scatter / Flocking
           
-            
-            if(particleSystem.size() == 0){//Old error???
+            if(particleSystem.size() == 0){
                 
                 s->sequencer();
                 loadFrame(s);
                 
-            }else { //if(scatterSource == -1)
-                
+            }else {
+                //Manage switching  between scattering  and normal mesh state of particle system
                 scattering = true;
             }
             
             break;
         }
-        case 2 : { // Mesh
+        case 2 : { // Mesh / Scan
             
-            s->currentFrame.image = read.readImage("images/"+s->currentFrame.material);//realized need an image of mesh to understand correlation between data panel and particle simulation
+            s->currentFrame.image = read.readImage("images/"+s->currentFrame.material);//realized need an image of mesh to understand correlation between data panel and particle simulation. Bit last minute use of unused data field
     
-            if(s->currentFrame.uID.find("3D") != std::string::npos){
+            if(s->currentFrame.uID.find("3D") != std::string::npos){//only load mesh if it was not originally an image
                 s->currentFrame.mesh = read.readMesh("meshes/"+s->currentFrame.externalFileName);
             }
-            
-
-      
+        
             if(s->currentFrame.mesh.getVertices().size() > 0){
                 addMeshToParticleSys(s->currentFrame.mesh);
                 
-                //For camera to look at
+                //For animating camera to look at
                 randParticle = ofRandom(particleSystem.size());
                 camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
+                //Manage switching  between scattering  and normal mesh state of particle system
                 scattering = false;
             }
 
             break;
         }
         case 3 : { // Image
-//            currentFrame.mesh = sequence.back()->mesh;
-//            currentFrame.renderMesh = sequence.back()->renderMesh;
+
             s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
             s->currentFrame.addToMeta = false;
             
+            //Randomly add an image into the Backburner system as fragments of color
             if(s->currentFrame.image.isAllocated()){
                 if(ofRandom(1)>0.95){
                     DelaunayImage del01;
                     s->currentFrame.mesh = del01.triangulateImage(s->currentFrame.image,false,cubeResolution);
                     s->currentFrame.addToMeta = true;
-                    s->currentFrame.totalTime = 5000; //SLow the image from moving off?
+                    s->currentFrame.totalTime = 5000;
                     
-    //                Sequencer * s3D = getSequenceByType("3D");
-    //                s3D->forceNewFrame(s->currentFrame,2); //returns a pointer
                     addMeshToBackBurnerSys(s->currentFrame.mesh);
                 }
             }else{
@@ -335,9 +288,9 @@ void Control::loadFrame(Sequencer * s){
             
             break;
         }
-        case 4 : { // Texture
+        case 4 : { // " Texture " / fake 3D
             
-            //Create and dispose of delaunay iamge here
+            //Use Delaunay Triangulation to convert image to fragments of color (wanted to use the same visual langauge as the meshes)
             s->currentFrame.image = read.readImage("textures/"+s->currentFrame.externalFileName);
             
             if(s->currentFrame.image.isAllocated()){
@@ -349,9 +302,9 @@ void Control::loadFrame(Sequencer * s){
                 
                 //For camera to look at
                 randParticle = ofRandom(particleSystem.size());
-                
                 camLook = ofVec3f(particleSystem[randParticle].x,particleSystem[randParticle].y,particleSystem[randParticle].z);
                 
+                //Manage switching  between scattering  and normal mesh state of particle system
                 scattering = false;
             }else{
                 cout << "Image load failed: ";
@@ -363,30 +316,30 @@ void Control::loadFrame(Sequencer * s){
             break;
         }
         case 5 : { // Text
-            //If it's only text based, let the sound keep playing in the background?
+            
             s->currentFrame.totalTime = 500;
             
-            //hmm am I still using this check?
             if(s->currentFrame.externalFileName != "" && (s->currentFrame.externalFileName.find(".png") != std::string::npos || s->currentFrame.externalFileName.find(".jpg") != std::string::npos || s->currentFrame.externalFileName.find(".jpeg") != std::string::npos)){
                 s->currentFrame.image = read.readImage("images/"+s->currentFrame.externalFileName);
             }
             
+            //Original plan was to incorporate dates more, but the processing time of all this data just proved too much for now
             if(s->currentFrame.historyVec.size() > 0){
                 for(int i = 0; i < s->currentFrame.historyVec.size(); i ++){
                     int timeAprox = int(s->currentFrame.historyVec[i].text.length()*70);
                     
                     s->currentFrame.historyVec[i].length = timeAprox;
                     
-                    //Do this in case the text is very long??
+                    //Rough approximation of how long text will take to be read by system
                     s->currentFrame.totalTime += timeAprox;
                 }
             }
             
-            soundManager.updateReadOut(&s->currentFrame); //Will this allow overlapping? probably not... could strip down
+            soundManager.updateReadOut(&s->currentFrame);
             break;
         }
         default : {
-            //error handling if an incomplete json file ends up in data
+            //error handling if an incomplete json file ends up in data folder
             cout << "Unrecognized Frame Type" << endl;
             //Dispose of frame and continue with deque in next call to update
             s->sequencer();
@@ -397,20 +350,19 @@ void Control::loadFrame(Sequencer * s){
     }
     
 
-    
+    //Load in any audio files that have been added
     soundManager.updateSound(&s->currentFrame);
     
-    //Also maybe better to separate soundManager into text read and sound play
+    //update the data screen
     dataScreen.loadData(s->currentFrame);
 }
 
-
+//Add mesh data to the ACTIVE state and move current active particles to the backburner system
 void Control::addMeshToParticleSys(ofMesh mesh){
     
     for(int i = 0; i < mesh.getVertices().size();i++){
         mesh.setVertex(i, mesh.getVertex(i) + ofVec3f(cubeResolution/2,cubeResolution/2,cubeResolution/2));
     }
-    
     
     vector<BinnedParticle> tempVec = particleSystem.getParticles();;
     for(int i = 0; i < tempVec.size(); i++ ){
@@ -418,7 +370,6 @@ void Control::addMeshToParticleSys(ofMesh mesh){
     }
     
     particleSystem.clear();
-    
     
     for (int i = 0; i < mesh.getIndices().size()-3; i+=3){
         
@@ -438,13 +389,13 @@ void Control::addMeshToParticleSys(ofMesh mesh){
         particle.p1Color = mesh.getColor( mesh.getIndex(i+1));
         particle.p2Color  = mesh.getColor( mesh.getIndex(i+2));
         
-        particleSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
+        particleSystem.add(particle);
         
     }
     
 }
 
-//To initialize straight to backburner
+//To initialize straight to backburner (for add the random images in)
 void Control::addMeshToBackBurnerSys(ofMesh mesh){
     
     for (int i = 0; i < mesh.getIndices().size()-3; i+=3){
@@ -463,23 +414,17 @@ void Control::addMeshToBackBurnerSys(ofMesh mesh){
         particle.p1Color = mesh.getColor( mesh.getIndex(i+1));
         particle.p2Color  = mesh.getColor( mesh.getIndex(i+2));
         
-        backBurnerSystem.add(particle); //unnesseccary storage of the particle arrays / for memory that is
+        backBurnerSystem.add(particle);
         
     }
 }
 
+//Didn't really use in the end, but could be helpful in future
 Sequencer* Control::getSequenceByType(string t){
     for(int i = 0; i < sequences.size();i++){
         if(sequences[i].vecType == t) return &sequences[i];
     }
 }
-
-
-
-
-
-
-
 
 
 

@@ -23,30 +23,22 @@
 class Control {
 protected:
 
-    // Binned particle setup
-    
-    //PROBABLY DON'T NEED half of these
+    // Binned particle
     float timeStep;
     float particleNeighborhood, particleRepulsion, particleCohesion, particleAlign; 
     float centerAttraction;
     float cubeResolution;
     
-    int kBinnedParticles, startTime;
+    int startTime;
     BinnedParticleSystem particleSystem;
     BinnedParticleSystem backBurnerSystem;
-    bool isMousePressed, slowMotion;
-    
-    bool drawBalls;
-    
+
     Read read;
     Write write;
-    
-    frame scatter;
-    
     SoundManager soundManager;
-    
+    frame scatter;
+
     bool scattering;
-    int scatterSource;
    
 public:
     Control();
@@ -61,22 +53,16 @@ public:
     void setupDataScreen();
     void drawDataScreen();
     
+    DataScreen dataScreen;
     Sequencer* getSequenceByType(string t);
     
     void exportPLY();
     
     vector<Sequencer> sequences;
     
-    DelaunayImage imgRoulete;
-    
     ofVec3f camLook;
     int randParticle;
     
-    DataScreen dataScreen;
-    
-    
-//    If I need to add to GUI
-//    ofParameter<float> SIDEWAYS{"Sideways", 0, -1, 1};
 };
 
 

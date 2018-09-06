@@ -3,6 +3,13 @@
 #include "BinnedParticle.h"
 #include "history.h"
 
+//This maps the JSON data structure to Openframeworks
+//It has legacy stuff and aspirational stuff
+//I started by writing out a potential data sctructure in a JSON file
+//Then set up all the parsing and after that point
+//Sort of just experimented in the form I had created
+//I will no doubt strip this down and re-shuffle / re-name etc in the future
+
 struct frame {
     
     //initialize with values for logic checks later
@@ -37,16 +44,15 @@ struct frame {
     vector< history > historyVec;
     int currentHistoryIndex;
     
-    //programmatic stuff
     string uID;
     bool animating;
     bool renderMesh;
     bool addToMeta;
     
-    vector< ofVec3f > points; //default constructed to be empty
+    vector< ofVec3f > points;
     vector< ofColor > pointColors;
     
-    vector< ofVec3f > pointsB; //default constructed to be empty
+    vector< ofVec3f > pointsB;
     vector< ofColor > pointColorsB;
     
     ofMesh mesh;

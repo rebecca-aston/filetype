@@ -88,7 +88,8 @@ vector< frame > Read::readJson(string path){
             temp.citation = json["citation"].asString();
             
             
-            //Frame specific data
+            
+            //Frame specific data types
             if(dev)cout << json["frames"][i]["frame-type"].asString() << endl;
             
             if(json["frames"][i]["frame-type"].asString() == "process"){
@@ -111,6 +112,8 @@ vector< frame > Read::readJson(string path){
                 temp.frameType = 5;
             }
             
+            
+            //Frame specific stuff
             if(dev)cout << json["frames"][i]["weight"].asFloat() << endl;
             temp.weight = json["frames"][i]["weight"].asFloat();
             
@@ -134,8 +137,11 @@ vector< frame > Read::readJson(string path){
             if(dev)cout<< json["frames"][i]["total-time"].asInt() << endl;
             temp.totalTime = json["frames"][i]["total-time"].asInt();
             
+            
+            //The "history" timeline stuff and text / sound
             for(int j = 0; j < json["frames"][i]["history"].size(); j++){
                 
+                //Limit length of stuff scraped from the internet
                 if((json["frames"][i]["history"][j]["text"].asString().size() < 1000 && json["frames"][i]["history"][j]["text"].asString().size() > 10 ) || json["frames"][i]["history"][j]["sound"].asString().size() > 0){
                     
                     history histEntry;
@@ -173,7 +179,6 @@ vector< frame > Read::readJson(string path){
  
             }
             
-            cout << temp.frameType << endl;
             vec.push_back(temp);
         }
         

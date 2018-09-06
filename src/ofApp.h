@@ -13,7 +13,6 @@ class ofApp : public ofBaseApp{
 		void draw();
     
         void setupSecondScreen();
-//        void update();
         void drawSecondScreen(ofEventArgs & args);
     
         void drawAxis();

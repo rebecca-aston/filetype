@@ -33,9 +33,7 @@ public:
 	vector<BinnedParticle*> getNeighbors(float x, float y, float z, float radius);
 	vector<BinnedParticle*> getRegion(unsigned minX, unsigned maxX, unsigned minY, unsigned maxY,unsigned minZ, unsigned maxZ);
 	unsigned size() const;
-	BinnedParticle& operator[](unsigned i); // not sure what this is? 
-
-    void flowField(float targetX, float targetY, float targetZ, float radius, float scale);
+	BinnedParticle& operator[](unsigned i);
 
 	void setupForces();
 	void addRepulsionForce(const BinnedParticle& particle, float radius, float scale);

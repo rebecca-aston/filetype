@@ -55,33 +55,21 @@ void ofApp::draw(){
         //Get it to always look at the center or maybe at leader or random particle
         cam.lookAt(control.camLook,ofVec3f(0,0,1));//second argument is up vector
         
-        
-        
-//        instead of lerping to set CatPosition
-//        Get it to continually rotate around the camlook position
-        
+        //Just for a little movement through / around / into the meshes
+        //Wanted to get that real sense of changing scale where some times they are just triangles of color filling
+        //the whole screen, and at others you see a whole jug in the distance
         float orbitRadius = ofMap(sin(ofGetFrameNum()*0.002),-1,1,400,900);
         float ypos= sin(ofDegToRad(displayCamRotation))*orbitRadius;
         float xpos= cos(ofDegToRad(displayCamRotation))*orbitRadius;
-//        float zpos= sin(DEG_TO_RAD((displayCamRotation))*orbitRadius;
-//
+
         cam.setGlobalPosition(xpos,ypos, 700);
-//
+
         if(displayCamRotation > 360){
             displayCamRotation = 0;
         }else{
             displayCamRotation += 0.1;
         }
         
-        
-//        ofVec3f pos = cam.getGlobalPosition();
-//        ofVec3f lerpPos;
-//        
-//        lerpPos.x = ofLerp(pos.x, control.camPos.x,.05);
-//        lerpPos.y = ofLerp(pos.y, control.camPos.y,.05);
-//        lerpPos.z = ofLerp(pos.z, control.camPos.z,.05);
-//        
-//        cam.setGlobalPosition(lerpPos);
     }
     
     
@@ -94,30 +82,15 @@ void ofApp::draw(){
     if(toggle_grid && !presentationMode){
         drawGrid();
     }
-    
-//    ofEnableLighting();
-//    light.enable();
-    
 
     control.draw();
    
-//    light.disable();
-//    ofDisableLighting();
-    
     cam.end();
     
-    //DEBUG
-//    control.del.image.draw(0,0);
-//    control.del.blurred.draw(0,0);
-    
-    //disables depth so gui text is visible in 2D in top of 3D cam
-//    ofDisableDepthTest();
-
 }
 
 void ofApp::drawSecondScreen(ofEventArgs & args){
 
-    
     control.drawDataScreen();
     
     ofSetColor(255);
@@ -153,7 +126,7 @@ void ofApp::drawGrid() {
     ofSetColor(200);
     float sz = 100;
     int nm = 8;
-    // draw lines along the flat XY meshSystem
+ 
     for(int i = 0; i <= nm; i++){
         ofDrawLine( (i * sz) - (sz*nm/2), -sz*nm/2, 0, (i * sz) - (sz*nm/2), sz*nm/2, 0);
         ofDrawLine( -sz*nm/2, (i * sz) - (sz*nm/2), 0, sz*nm/2, (i * sz) - (sz*nm/2), 0);
@@ -175,5 +148,5 @@ void ofApp::addForceButtonPresssed(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-//    system("say 'this is a quick test' &");  
+
 }

@@ -62,19 +62,16 @@ void Sequencer::resetCurrentFrame(){
     
 }
 
-
-//Add to queue function....
-//So that if there is a temporary frame that is being added it doesn't enter into circulation for ever
-//it forces the current particles into backburner... 
-
+//Tis is used to add a "curated" proceudral frame into the sequence without adjusting the weights / sequencing of original data
 void Sequencer::forceNewFrame(frame f, int fType){
     vector<string> tags;
-    if(f.frameType == 1){ //Process (which has no tags)
+    if(f.frameType == 1){ //Process / explosion / scatter (which has no tags)
         tags = currentFrame.tags;
     }
 
     //Boolean to skip the use of weighted random sequencer
     forcedFrame = true;
+    
     currentFrame = f;
     currentFrame.frameType = fType;
     currentFrame.tags = tags;
@@ -82,8 +79,6 @@ void Sequencer::forceNewFrame(frame f, int fType){
     currentFrame.animating = true;
     
 }
-
-
 
 bool compareByWeight(const frame &a, const frame &b){
     return a.weight > b.weight;
@@ -119,7 +114,7 @@ void Sequencer::sequencer(){
         ofSort(frameVec, &compareByWeight);
         
         
-        //Randomly choose from the first quarter of strongest weighted frames
+        //Randomly choose from the first half of strongest weighted frames
         weightedRandom = ofRandom(floor(frameVec.size()/2));
         if(frameVec[weightedRandom].uID == currentFrame.uID) weightedRandom ++; //leave in just in case get repetition
 //        frameVec[weightedRandom].weight = 0;//decrease chance of repetition?

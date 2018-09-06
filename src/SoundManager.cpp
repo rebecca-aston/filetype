@@ -17,8 +17,7 @@ SoundManager::SoundManager(){
 void SoundManager::updateReadOut(frame * current){
     checkIsReading();
     
-    if(!isReading && current->historyVec.size() > 0){ //current.historyVec.size() > 0 && current.currentHistoryIndex < current.historyVec.size() &&
-        
+    if(!isReading && current->historyVec.size() > 0){
        
         if(current->currentHistoryIndex == -1){
             current->currentHistoryIndex = 0;
@@ -41,14 +40,20 @@ void SoundManager::updateReadOut(frame * current){
 }
 
 void SoundManager::readText(string text){
-    //& makes it non-blocking
-    
+
     startTime = ofGetElapsedTimeMillis();
     
     std::string open("say '");
     std::string close("' &");
     open += text;
     open += close;
+    
+     //THIS!!! Was causing my program to mysteriously crash after 45 / 60 mins. I left the logic flow in
+    //as it was a last minute discovery sadly and just so you can see how I intended it
+    //I will implement a better programmatic text to speech
+    //For the show I just went analog and used an online converter to make a more curated selection of text
+    //Included a crash/error image as it only ever even managed to get all the way through debugger error throwing once
+    //It usually just froze
 //    system(open.c_str());
 }
 
